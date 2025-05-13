@@ -1,0 +1,51 @@
+<?php
+
+use Drupal\Core\Routing\RouteMatchInterface;
+
+/**
+ * Dynamic list of allowed feed values for the feed selector field.
+ */
+function redbuoy_media_pod_allowed_feed_values() {
+  $feeds = \Drupal::config('redbuoy_media_pod.settings')->get('feeds') ?? [];
+  $output = [];
+  foreach ($feeds as $feed) {
+    $output[$feed] = ucfirst($feed);
+  }
+  return $output;
+}
+
+
+/**
+ * Implements hook_help().
+ */
+function redbuoy_media_pod_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    case 'help.page.redbuoy_media_pod':
+      $output = '<h2>' . t('Overview') . '</h2>';
+      $output .= '<p>' . t('The Red Buoy Media Podcast module allows you to manage podcast episode content and generate valid RSS feeds compatible with Apple Podcasts, Spotify, and other podcasting platforms.') . '</p>';
+
+      $output .= '<h2>' . t('Getting Started') . '</h2>';
+      $output .= '<ol>';
+      $output .= '<li>' . t('You can run multiple individually branded podcasts from this one module') . '</li>';
+      $output .= '<li>' . t('Visit the <a href=":url">Podcast Feed Settings</a> page to create one or more podcast feeds.', [
+        ':url' => \Drupal\Core\Url::fromRoute('redbuoy_media_pod.feed_list')->toString()
+      ]) . '</li>';
+
+      $output .= '<li>' . t('Create new podcast episodes using the <em>Podcast Episode</em> content type.') . '</li>';
+      $output .= '<li>' . t('Assign each episode to a feed using the <em>Podcast Feed</em> field.') . '</li>';
+      $output .= '<li>' . t('Access the public feed at <code>/podcast/feed/[feed_name]</code>.') . '</li>';
+      $output .= '<li>' . t('Validate your feed at <a href="https://www.castfeedvalidator.com" target="_blank">CastFeedValidator.com</a>.') . '</li>';
+      $output .= '</ol>';
+
+      $output .= '<h2>' . t('Notes') . '</h2>';
+      $output .= '<ul>';
+      $output .= '<li>' . t('Ideally you should create a landing page for each podcast and enter that in the Podcast Landing Page URL field on the settings page for each podcast') . '</li>';
+      $output .= '<li>' . t('Alternatively you can create a view of teasers for each podcast and use that as your landing page.') . '</li>';
+      $output .= '<li>' . t('Each feed has its own configuration, including title, artwork, author, and optional iTunes tags.') . '</li>';
+      $output .= '<li>' . t('Feeds automatically include proper ETag and Last-Modified headers to support efficient caching.') . '</li>';
+      $output .= '<li>' . t('You may link to Patreon or premium content by embedding URLs in the episode description field.') . '</li>';
+      $output .= '</ul>';
+
+      return $output;
+  }
+}

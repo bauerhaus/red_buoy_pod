@@ -1,0 +1,153 @@
+[
+  {
+    "name": "podcast_title",
+    "label": "Podcast Title",
+    "type": "textfield",
+    "default": "",
+    "required": true,
+    "xml_tag": "title",
+    "cdata": false,
+    "description": "The title of the podcast as it appears in directories."
+  },
+  {
+    "name": "podcast_keywords",
+    "label": "iTunes Keywords",
+    "type": "textfield",
+    "default": "",
+    "required": false,
+    "xml_tag": "itunes:keywords",
+    "cdata": false
+  },
+  {
+    "name": "podcast_language",
+    "label": "Language Code",
+    "type": "textfield",
+    "default": "en-us",
+    "required": true,
+    "xml_tag": "language",
+    "cdata": false,
+    "description": "e.g., en-us, fr-fr"
+  },
+  {
+    "name": "itunes_explicit",
+    "label": "Is the podcast explicit?",
+    "type": "select",
+    "default": "false",
+    "required": true,
+    "xml_tag": "itunes:explicit",
+    "cdata": false,
+    "options": {
+      "false": "No (clean)",
+      "true": "Yes (explicit)"
+    },
+    "description": "Required by Apple Podcasts for parental advisory labeling."
+  },
+  {
+    "name": "itunes_category",
+    "label": "iTunes Category + Subcategory",
+    "type": "group",
+    "required": true,
+    "xml_tag": "itunes:category",
+    "attribute": {
+      "text": "podcast_category"
+    },
+    "children": [
+      {
+        "name": "podcast_sub_category",
+        "xml_tag": "itunes:category",
+        "attribute": {
+          "text": "true"
+        }
+      }
+    ]
+  },
+  {
+    "name": "podcast_image_url",
+    "label": "Cover Image URL",
+    "type": "textfield",
+    "default": "",
+    "required": false,
+    "xml_tag": "itunes:image",
+    "attribute": {
+      "href": true
+    },
+    "cdata": false,
+    "description": "iTunes image href URL"
+  },
+  {
+    "name": "itunes_author",
+    "label": "Author",
+    "type": "textfield",
+    "default": "",
+    "required": true,
+    "xml_tag": "itunes:author",
+    "description": "The Author of the Podcast - should be a person with a name"
+  },
+  {
+    "name": "podcast_description",
+    "label": "Podcast Description",
+    "type": "text_format",
+    "default": {
+      "value": "",
+      "format": "full_html"
+    },
+    "required": false,
+    "xml_tag": "itunes:summary",
+    "cdata": true,
+    "description": "Rich-text description of the podcast, HTML allowed."
+  },
+  {
+    "name": "podcast_owner",
+    "label": "Owner Info",
+    "type": "group",
+    "required": true,
+    "xml_tag": "itunes:owner",
+    "children": [
+      {
+        "name": "podcast_owner_name",
+        "xml_tag": "itunes:name",
+        "cdata": false
+      },
+      {
+        "name": "podcast_owner_email",
+        "xml_tag": "itunes:email",
+        "cdata": false
+      }
+    ],
+    "description": "Used for Apple Podcasts contact info."
+  },
+  {
+    "name": "podcast_copyright",
+    "label": "Copyright Notice",
+    "type": "textfield",
+    "default": "",
+    "required": false,
+    "xml_tag": "copyright",
+    "cdata": false,
+    "description": "Copyright information"
+  },
+  {
+    "name": "itunes_type",
+    "label": "Podcast Type",
+    "type": "select",
+    "default": "episodic",
+    "required": false,
+    "xml_tag": "itunes:type",
+    "cdata": false,
+    "options": {
+      "episodic": "Episodic",
+      "serial": "Serial"
+    },
+    "description": "Choose how your podcast is structured. Episodic is default, Serial is a story line that must be followed in sequence"
+  },
+  {
+    "name": "podcast_link",
+    "label": "Podcast Landing Page URL",
+    "type": "textfield",
+    "default": "",
+    "required": false,
+    "xml_tag": "link",
+    "cdata": false,
+    "description": "URL to the public landing page for this podcast feed"
+  }
+]

@@ -1,0 +1,7 @@
+name: 'Red Buoy Media Podcast'
+type: module
+description: 'Multi-feed podcast generator for Red Buoy Media.'
+package: 'Red Buoy'
+core_version_requirement: ^10 || ^11
+dependencies:
+  - node

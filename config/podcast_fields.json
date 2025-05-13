@@ -1,0 +1,120 @@
+[
+  {
+    "name": "field_audio_file",
+    "label": "Audio File",
+    "type": "file",
+    "description": "Suggested audio file format is MP3",
+    "settings": {
+      "file_extensions": "mp3 wav aac m4b"
+    },
+    "required": true
+  },
+  {
+    "name": "field_duration",
+    "label": "Duration",
+    "type": "string",
+    "description": "Enter the episode duration in HH:MM:SS format (e.g., 00:15:30). This value appears in the RSS feed and helps apps display listening time.",
+    "settings": {
+      "max_length": 8
+    }
+  },
+  {
+    "name": "field_episode_number",
+    "label": "Episode Number",
+    "type": "integer",
+    "description": "You will need to manually track your episode numbers."
+  },
+  {
+    "name": "field_explicit",
+    "label": "Explicit Content",
+    "type": "list_string",
+    "description": "This is critical, be honest and don't risk your content getting to children if it should not.",
+    "settings": {
+      "allowed_values": {
+        "yes": "Yes",
+        "no": "No",
+        "clean": "Clean"
+      }
+    }
+  },
+  {
+    "name": "field_author",
+    "label": "Author",
+    "type": "string",
+    "description": "This should be the person responsible for the content."
+  },
+  {
+    "name": "field_episode_image",
+    "label": "Episode Image",
+    "type": "image",
+    "description": "You may not have episode images, and if you do there is no guarantee the Podcast app will display it.",
+    "settings": {
+      "file_extensions": "png gif jpg jpeg webp"
+    },
+    "required": false
+  },
+  {
+    "name": "field_episode_type",
+    "label": "Episode Type",
+    "type": "list_string",
+    "description": "Note: If this is a teaser for a paid episode, you can include a link to the full version (e.g., on Patreon) in the description field. Many podcast apps will display that link directly to your listeners.",
+    "settings": {
+      "allowed_values": {
+        "full": "Full: A complete episode available to all listeners.",
+        "trailer": "Trailer: A short promo or teaser.",
+        "bonus": "Bonus: Extra content, such as early access or subscriber-only previews."
+      }
+    }
+  },
+  {
+    "name": "field_keywords",
+    "label": "iTunes Keywords",
+    "description": "Enter up to 12 comma-separated keywords to help with search.",
+    "type": "string",
+    "required": false
+  },
+  {
+    "name": "field_podcast_date",
+    "label": "Podcast Date",
+    "type": "datetime",
+    "description": "",
+    "required": true
+  },
+  {
+    "name": "field_podcast_description",
+    "label": "Podcast Description",
+    "description": "Write a description of this episode, it may be displayed as either plain text or HTML content depending on the podcast app. Most modern apps should provide the HTML rich text provided by the editor.",
+    "type": "text_long",
+    "required": true
+  },
+  {
+    "name": "field_season_number",
+    "label": "Season Number",
+    "type": "integer",
+    "description": "You will need to manually track the season numbers.",
+    "settings": {
+      "min": null,
+      "max": null,
+      "prefix": "",
+      "suffix": ""
+    },
+    "required": false
+  },
+  {
+    "name": "field_subtitle",
+    "label": "Subtitle",
+    "type": "string",
+    "description": "",
+    "required": false
+  },
+  {
+    "name": "field_podcast_feed",
+    "label": "Podcast Feed",
+    "type": "list_string",
+    "description": "Select the podcast feed this episode belongs to.",
+    "required": true,
+    "settings": {
+      "allowed_values_function": "redbuoy_media_pod_allowed_feed_values"
+    }
+  }
+]

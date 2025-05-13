@@ -1,0 +1,163 @@
+<?php
+
+use Drupal\node\Entity\NodeType;
+use Drupal\field\Entity\FieldStorageConfig;
+use Drupal\field\Entity\FieldConfig;
+use Drupal\Core\Entity\Entity\EntityFormDisplay;
+
+/**
+ * Implements hook_install().
+ */
+function redbuoy_media_pod_install() {
+  // 1. Create the 'podcast_episode' content type if not already present.
+  if (!NodeType::load('podcast_episode')) {
+    NodeType::create([
+      'type' => 'podcast_episode',
+      'name' => 'Podcast Episode',
+      'description' => 'A single episode in a podcast feed.',
+    ])->save();
+  }
+
+  // 2. Load and install fields from podcast_fields.json.
+  $module_path = \Drupal::service('extension.list.module')->getPath('redbuoy_media_pod');
+
+  $field_path = DRUPAL_ROOT . '/' . $module_path . '/config/podcast_fields.json';
+  if (file_exists($field_path)) {
+    $field_defs = json_decode(file_get_contents($field_path), true);
+
+    foreach ($field_defs as $def) {
+      $field_name = $def['name'];
+      $field_type = $def['type'];
+      $field_desc = $def['description'];
+      $required = $def['required'] ?? false;
+      $settings = $def['settings'] ?? [];
+
+      // Create field storage if not exists.
+      if (!FieldStorageConfig::loadByName('node', $field_name)) {
+        FieldStorageConfig::create([
+          'field_name' => $field_name,
+          'entity_type' => 'node',
+          'type' => $field_type,
+          'cardinality' => 1,
+          'settings' => $settings,
+        ])->save();
+      }
+
+      // Attach the field to the bundle.
+      if (!FieldConfig::loadByName('node', 'podcast_episode', $field_name)) {
+        $field_config = FieldConfig::create([
+          'field_name' => $field_name,
+          'entity_type' => 'node',
+          'bundle' => 'podcast_episode',
+          'label' => $def['label'] ?? $field_name,
+          'required' => $required,
+          'description' => $field_desc,
+        ]);
+
+        // This ensures widget-level settings like file_extensions are respected in the form display.
+        if (!empty($settings)) {
+          $field_config->setSettings($settings);
+        }
+
+        $field_config->save();
+      }
+    }
+  }
+
+  // 3. Load feed settings JSON and split into protected + editable.
+  $settings_path = DRUPAL_ROOT . '/' . $module_path . '/config/feed_settings.json';
+  if (file_exists($settings_path)) {
+    $settings_defs = json_decode(file_get_contents($settings_path), true);
+
+    $protected = [];
+    $editable = [];
+
+    foreach ($settings_defs as $def) {
+      if (!empty($def['required'])) {
+        $protected[] = $def;
+      } else {
+        $editable[] = $def;
+      }
+    }
+
+    // Save to config.
+    \Drupal::configFactory()->getEditable('redbuoy_media_pod.settings')
+      ->set('feed_protected', $protected)
+      ->set('feed_fields', $editable)
+      ->save();
+  }
+
+  // 4. Add a default list of feeds (can be edited later).
+  \Drupal::configFactory()->getEditable('redbuoy_media_pod.settings')
+    ->set('feeds', ['default'])
+    ->save();
+
+  // 5. Move the fields to active display
+  $form_display = EntityFormDisplay::load('node.podcast_episode.default');
+if (!$form_display) {
+  $form_display = EntityFormDisplay::create([
+    'targetEntityType' => 'node',
+    'bundle' => 'podcast_episode',
+    'mode' => 'default',
+    'status' => TRUE,
+  ]);
+}
+
+foreach ($field_defs as $def) {
+  $form_display->setComponent($def['name'], [
+    'type' => 'string_textfield', // You can conditionally map field types to widgets if desired
+    'weight' => 0,
+  ]);
+}
+
+$form_display->save();
+}
+
+function redbuoy_media_pod_uninstall() {
+  // Step 1: Delete all nodes of type 'podcast_episode'.
+  $storage = \Drupal::entityTypeManager()->getStorage('node');
+  $nids = $storage->getQuery()
+    ->condition('type', 'podcast_episode')
+    ->accessCheck(false)
+    ->execute();
+
+  if (!empty($nids)) {
+    $nodes = $storage->loadMultiple($nids);
+    $storage->delete($nodes);
+  }
+
+  // Step 2: Delete unified config.
+  \Drupal::configFactory()->getEditable('redbuoy_media_pod.settings')->delete();
+
+  // Step 3: Delete the podcast_episode content type.
+  if ($type = \Drupal\node\Entity\NodeType::load('podcast_episode')) {
+    $type->delete();
+  }
+
+  // Step 4: Delete all attached fields.
+  $field_names = [
+    'field_audio_file',
+    'field_duration',
+    'field_episode_number',
+    'field_explicit',
+    'field_author',
+    'field_episode_image',
+    'field_episode_type',
+    'field_keywords',
+    'field_podcast_date',
+    'field_podcast_description',
+    'field_season_number',
+    'field_subtitle',
+    'field_podcast_summary',
+  ];
+
+  foreach ($field_names as $field_name) {
+    if ($config = \Drupal\field\Entity\FieldConfig::load('node.podcast_episode.' . $field_name)) {
+      $config->delete();
+    }
+
+    if ($storage = \Drupal\field\Entity\FieldStorageConfig::loadByName('node', $field_name)) {
+      $storage->delete();
+    }
+  }
+}

@@ -1,0 +1,22 @@
+redbuoy_media_pod.feed_list:
+  path: '/admin/config/media/podcasts'
+  defaults:
+    _form: '\Drupal\redbuoy_media_pod\Form\FeedListForm'
+    _title: 'Podcast Feeds'
+  requirements:
+    _permission: 'administer site configuration'
+
+redbuoy_media_pod.feed_settings:
+  path: '/admin/config/media/podcasts/{feed}/settings'
+  defaults:
+    _form: '\Drupal\redbuoy_media_pod\Form\FeedSettingsForm'
+    _title: 'Podcast Feed Settings'
+  requirements:
+    _permission: 'administer site configuration'
+
+redbuoy_media_pod.render_feed:
+  path: '/podcast/feed/{feed}'
+  defaults:
+    _controller: '\Drupal\redbuoy_media_pod\Controller\PodcastFeedController::renderFeed'
+  requirements:
+    _permission: 'access content'
