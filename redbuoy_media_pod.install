@@ -19,48 +19,60 @@ function redbuoy_media_pod_install() {
   }
 
   // 2. Load and install fields from podcast_fields.json.
+  $field_defs = [];
   $module_path = \Drupal::service('extension.list.module')->getPath('redbuoy_media_pod');
-
   $field_path = DRUPAL_ROOT . '/' . $module_path . '/config/podcast_fields.json';
   if (file_exists($field_path)) {
-    $field_defs = json_decode(file_get_contents($field_path), true);
+    $json = file_get_contents($field_path);
+    $decoded = json_decode($json, true);
+    if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+      $field_defs = $decoded;
+      foreach ($field_defs as $def) {
+        $field_name = $def['name'];
+        $field_type = $def['type'];
+        $field_desc = $def['description'];
+        $required = $def['required'] ?? false;
+        $settings = $def['settings'] ?? [];
 
-    foreach ($field_defs as $def) {
-      $field_name = $def['name'];
-      $field_type = $def['type'];
-      $field_desc = $def['description'];
-      $required = $def['required'] ?? false;
-      $settings = $def['settings'] ?? [];
-
-      // Create field storage if not exists.
-      if (!FieldStorageConfig::loadByName('node', $field_name)) {
-        FieldStorageConfig::create([
-          'field_name' => $field_name,
-          'entity_type' => 'node',
-          'type' => $field_type,
-          'cardinality' => 1,
-          'settings' => $settings,
-        ])->save();
-      }
-
-      // Attach the field to the bundle.
-      if (!FieldConfig::loadByName('node', 'podcast_episode', $field_name)) {
-        $field_config = FieldConfig::create([
-          'field_name' => $field_name,
-          'entity_type' => 'node',
-          'bundle' => 'podcast_episode',
-          'label' => $def['label'] ?? $field_name,
-          'required' => $required,
-          'description' => $field_desc,
-        ]);
-
-        // This ensures widget-level settings like file_extensions are respected in the form display.
-        if (!empty($settings)) {
-          $field_config->setSettings($settings);
+        // Create field storage if not exists.
+        if (!FieldStorageConfig::loadByName('node', $field_name)) {
+          FieldStorageConfig::create([
+            'field_name' => $field_name,
+            'entity_type' => 'node',
+            'type' => $field_type,
+            'cardinality' => 1,
+            'settings' => $settings,
+          ])->save();
         }
 
-        $field_config->save();
+        // Attach the field to the bundle.
+        if (!FieldConfig::loadByName('node', 'podcast_episode', $field_name)) {
+          $field_config = FieldConfig::create([
+            'field_name' => $field_name,
+            'entity_type' => 'node',
+            'bundle' => 'podcast_episode',
+            'label' => $def['label'] ?? $field_name,
+            'required' => $required,
+            'description' => $field_desc,
+          ]);
+
+          // This ensures widget-level settings like file_extensions are respected in the form display.
+          if (!empty($settings)) {
+            $field_config->setSettings($settings);
+          }
+
+          $field_config->save();
+        }
       }
+    }
+    else {
+      \Drupal::logger('redbuoy_media_pod')->error(
+        'Failed to decode JSON in %file. Error: %error',
+        [
+          '%file' => $field_path,
+          '%error' => json_last_error_msg(),
+        ]
+      );
     }
   }
 

@@ -2,20 +2,39 @@
 
 namespace Drupal\redbuoy_media_pod\Controller;
 
+use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\File\FileSystemInterface;
+use Drupal\Core\File\FileUrlGeneratorInterface;
+use Drupal\Core\Logger\LoggerChannelFactoryInterface;
+use Drupal\file\FileInterface;
+use Drupal\node\Entity\Node;
+use Psr\Log\LoggerInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Drupal\node\Entity\Node;
-use Drupal\Core\Config\ConfigFactoryInterface;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\File\FileUrlGeneratorInterface;
-use Symfony\Component\HttpFoundation\RequestStack;
-use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Returns RSS feed output for a specific podcast feed.
  */
 class PodcastFeedController implements ContainerInjectionInterface {
+
+  /**
+   * The file system service.
+   *
+   * @var \Drupal\Core\File\FileSystemInterface
+   */
+  protected FileSystemInterface $fileSystem;
+
+
+  /**
+   * The logger channel.
+   *
+   * @var \Psr\Log\LoggerInterface
+   */
+  protected LoggerInterface $logger;
 
   /**
    * The config factory.
@@ -46,33 +65,41 @@ class PodcastFeedController implements ContainerInjectionInterface {
   protected RequestStack $requestStack;
 
   /**
-   * Constructor.
+   * PodcastFeedController constructor.
    *
-   * @param Drupal\Core\Config\ConfigFactoryInterface $configFactory
-   *   Config Factory Interface.
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
+   *   The config factory.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
-   *   Entity Type Manager.
+   *   The entity type manager.
    * @param \Drupal\Core\File\FileUrlGeneratorInterface $fileUrlGenerator
-   *   File URL Generator.
+   *   The file URL generator.
    * @param \Symfony\Component\HttpFoundation\RequestStack $requestStack
-   *   Request Stack.
+   *   The request stack.
+   * @param \Drupal\Core\Logger\LoggerChannelFactoryInterface $logger_factory
+   *   The logger channel factory.
+   * @param \Drupal\Core\File\FileSystemInterface $file_system
+   *   The file system service.
    */
   final public function __construct(
     ConfigFactoryInterface $configFactory,
     EntityTypeManagerInterface $entityTypeManager,
     FileUrlGeneratorInterface $fileUrlGenerator,
     RequestStack $requestStack,
+    LoggerChannelFactoryInterface $logger_factory,
+    FileSystemInterface $file_system,
   ) {
     $this->configFactory = $configFactory;
     $this->entityTypeManager = $entityTypeManager;
     $this->fileUrlGenerator = $fileUrlGenerator;
     $this->requestStack = $requestStack;
+    $this->logger = $logger_factory->get('redbuoy_media_pod');
+    $this->fileSystem = $file_system;
   }
 
   /**
    * Create function.
    *
-   * @param Symfony\Component\DependencyInjection\ContainerInterface $container
+   * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
    *   The container interface.
    *
    * @return static
@@ -83,6 +110,8 @@ class PodcastFeedController implements ContainerInjectionInterface {
       $container->get('entity_type.manager'),
       $container->get('file_url_generator'),
       $container->get('request_stack'),
+      $container->get('logger.factory'),
+      $container->get('file_system'),
     );
   }
 
@@ -120,10 +149,32 @@ class PodcastFeedController implements ContainerInjectionInterface {
     $rss_items = "";
     $last_modified_ts = 0;
     foreach ($nodes as $node) {
-      // Get variables from this node.
+      /** @var \Drupal\file\FileInterface|null $file */
       $file = $node->get('field_audio_file')->entity ?? NULL;
-      $size = filesize($file->getFileUri());
-      $url = $this->fileUrlGenerator->generateAbsoluteString($file->getFileUri());
+
+      if (!$file instanceof FileInterface) {
+        $this->logger->warning(
+          'Podcast node @nid has no valid audio file.',
+          ['@nid' => $node->id()]
+        );
+        continue;
+      }
+
+      $uri = $file->getFileUri();
+      $real_path = $this->fileSystem->realpath($uri);
+
+      if (!file_exists($real_path)) {
+        $this->logger->warning(
+          'File @uri for podcast node @nid does not exist.',
+          ['@uri' => $uri, '@nid' => $node->id()]
+        );
+        continue;
+      }
+
+      // Safe to proceed.
+      $size = filesize($real_path);
+      $url = $this->fileUrlGenerator->generateAbsoluteString($uri);
+
       $ts = strtotime($node->get('field_podcast_date')->value ?? '') ?: $node->getCreatedTime();
       $duration = htmlspecialchars($node->get('field_duration')->value ?? '');
       $explicit = htmlspecialchars($node->get('field_explicit')->value ?? '');
@@ -136,30 +187,33 @@ class PodcastFeedController implements ContainerInjectionInterface {
       $season = htmlspecialchars($node->get('field_season_number')->value ?? '');
       $type = htmlspecialchars($node->get('field_episode_type')->value ?? '');
       $author = htmlspecialchars($node->get('field_author')->value ?? '');
+
       $changed = $node->getChangedTime();
       if ($changed > $last_modified_ts) {
         $last_modified_ts = $changed;
       }
-      // Write the item XML.
+
+      // Now build the <item>.
       $rss_items .= "<item>\n";
-      $rss_items .= "        <title>{$node->label()}</title>\n";
-      $rss_items .= "        <link>{$node->toUrl('canonical', ['absolute' => TRUE])->toString()}</link>\n";
-      $rss_items .= "        <guid isPermaLink=\"false\">{$node->uuid()}</guid>\n";
-      $rss_items .= "        <enclosure url=\"{$url}\" length=\"{$size}\" type=\"audio/mpeg\" />\n";
-      $rss_items .= "        <pubDate>{$this->rfc2822($ts)}</pubDate>\n";
-      $rss_items .= "        <itunes:duration>$duration</itunes:duration>\n";
-      $rss_items .= "        <itunes:author>$author</itunes:author>\n";
-      $rss_items .= "        <itunes:explicit>$explicit</itunes:explicit>\n";
-      $rss_items .= "        <itunes:episode>$episode_number</itunes:episode>\n";
-      $rss_items .= "        <itunes:keywords>$keywords</itunes:keywords>\n";
-      $rss_items .= "        <itunes:subtitle>$subtitle</itunes:subtitle>\n";
-      $rss_items .= "        <itunes:summary><![CDATA[{$desc_plain}]]></itunes:summary>\n";
-      $rss_items .= "        <description>{$desc_plain}</description>\n";
-      $rss_items .= "        <content:encoded><![CDATA[{$desc_html}]]></content:encoded>\n";
-      $rss_items .= "        <itunes:season>$season</itunes:season>\n";
-      $rss_items .= "        <itunes:episodeType>$type</itunes:episodeType>\n";
-      $rss_items .= "    </item>";
+      $rss_items .= "  <title>{$node->label()}</title>\n";
+      $rss_items .= "  <link>{$node->toUrl('canonical', ['absolute' => TRUE])->toString()}</link>\n";
+      $rss_items .= "  <guid isPermaLink=\"false\">{$node->uuid()}</guid>\n";
+      $rss_items .= "  <enclosure url=\"{$url}\" length=\"{$size}\" type=\"audio/mpeg\" />\n";
+      $rss_items .= "  <pubDate>{$this->rfc2822($ts)}</pubDate>\n";
+      $rss_items .= "  <itunes:duration>$duration</itunes:duration>\n";
+      $rss_items .= "  <itunes:author>$author</itunes:author>\n";
+      $rss_items .= "  <itunes:explicit>$explicit</itunes:explicit>\n";
+      $rss_items .= "  <itunes:episode>$episode_number</itunes:episode>\n";
+      $rss_items .= "  <itunes:keywords>$keywords</itunes:keywords>\n";
+      $rss_items .= "  <itunes:subtitle>$subtitle</itunes:subtitle>\n";
+      $rss_items .= "  <itunes:summary><![CDATA[{$desc_plain}]]></itunes:summary>\n";
+      $rss_items .= "  <description>{$desc_plain}</description>\n";
+      $rss_items .= "  <content:encoded><![CDATA[{$desc_html}]]></content:encoded>\n";
+      $rss_items .= "  <itunes:season>$season</itunes:season>\n";
+      $rss_items .= "  <itunes:episodeType>$type</itunes:episodeType>\n";
+      $rss_items .= "</item>\n";
     }
+
     if ($last_modified_ts === 0) {
       $last_modified_ts = time();
     }

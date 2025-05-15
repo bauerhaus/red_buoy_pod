@@ -14,7 +14,6 @@ function redbuoy_media_pod_allowed_feed_values() {
   return $output;
 }
 
-
 /**
  * Implements hook_help().
  */
