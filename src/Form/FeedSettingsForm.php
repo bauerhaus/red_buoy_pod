@@ -2,15 +2,83 @@
 
 namespace Drupal\redbuoy_media_pod\Form;
 
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
-use Drupal\node\Entity\Node;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\Extension\ModuleExtensionList;
 
 /**
  * Provides settings for an individual podcast feed.
  */
 class FeedSettingsForm extends ConfigFormBase {
+
+  /**
+   * The module extension list.
+   *
+   * @var \Drupal\Core\Extension\ModuleExtensionList
+   */
+  protected ModuleExtensionList $moduleExtensionList;
+
+  /**
+   * The route match object.
+   *
+   * @var \Drupal\Core\Routing\RouteMatchInterface
+   */
+  protected RouteMatchInterface $injectedRouteMatch;
+
+  /**
+   * The entity storage manager.
+   *
+   * @var \Drupal\Core\Entity\EntityStorageInterface
+   */
+  protected $entityTypeManager;
+
+  /**
+   * The services config factory.
+   *
+   * @var \Drupal\Core\Config\ConfigFactoryInterface
+   */
+  protected $configFactory;
+
+  /**
+   * DependencyInjectionDemonstration constructor.
+   *
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
+   *   The entity type manager.
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
+   *   The config factory.
+   * @param \Drupal\Core\Routing\RouteMatchInterface $injectedRouteMatch
+   *   The matching routes.
+   * @param \Drupal\Core\Extension\ModuleExtensionList $moduleExtensionList
+   *   The Module Extension List.
+   */
+  final public function __construct(
+    EntityTypeManagerInterface $entityTypeManager,
+    ConfigFactoryInterface $configFactory,
+    RouteMatchInterface $injectedRouteMatch,
+    ModuleExtensionList $moduleExtensionList,
+  ) {
+    $this->entityTypeManager = $entityTypeManager;
+    $this->configFactory = $configFactory;
+    $this->routeMatch = $injectedRouteMatch;
+    $this->moduleExtensionList = $moduleExtensionList;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    return new static(
+      $container->get('entity_type.manager'),
+      $container->get('config.factory'),
+      $container->get('current_route_match'),
+      $container->get('extension.list.module')
+    );
+  }
 
   /**
    * {@inheritdoc}
@@ -23,7 +91,7 @@ class FeedSettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   protected function getEditableConfigNames() {
-    $feed = \Drupal::routeMatch()->getParameter('feed');
+    $feed = $this->routeMatch->getParameter('feed');
     return ["redbuoy_media_pod.settings.$feed"];
   }
 
@@ -33,9 +101,9 @@ class FeedSettingsForm extends ConfigFormBase {
   private function getFieldDefinitions(): array {
     static $fields = NULL;
     if ($fields === NULL) {
-      $path = DRUPAL_ROOT . '/' . \Drupal::service('extension.list.module')->getPath('redbuoy_media_pod') . '/config/feed_settings.json';
+      $path = DRUPAL_ROOT . '/' . $this->moduleExtensionList->getPath('redbuoy_media_pod') . '/config/feed_settings.json';
       if (file_exists($path)) {
-        $fields = json_decode(file_get_contents($path), true);
+        $fields = json_decode(file_get_contents($path), TRUE);
       }
     }
     return $fields ?? [];
@@ -45,7 +113,7 @@ class FeedSettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
-    $feed = \Drupal::routeMatch()->getParameter('feed');
+    $feed = $this->routeMatch->getParameter('feed');
     $config = $this->config("redbuoy_media_pod.settings.$feed");
     // Build the feed URL.
     $feed_url = Url::fromUri("https://www.castfeedvalidator.com/validate.php", [
@@ -55,7 +123,9 @@ class FeedSettingsForm extends ConfigFormBase {
     ])->toString();
 
     // Check for existing episodes.
-    $nids = \Drupal::entityTypeManager()->getStorage('node')->getQuery()
+    /** @var \Drupal\node\NodeStorage $storage */
+    $storage = $this->entityTypeManager->getStorage('node');
+    $nids = $storage->getQuery()
       ->accessCheck(FALSE)
       ->condition('status', 1)
       ->condition('type', 'podcast_episode')
@@ -65,6 +135,7 @@ class FeedSettingsForm extends ConfigFormBase {
     $has_content = !empty($nids);
 
     /* import added fields from JSON file */
+    // These labels come from site config and are not translatable.
     foreach ($this->getFieldDefinitions() as $def) {
 
       // Handle group fields.
@@ -73,16 +144,16 @@ class FeedSettingsForm extends ConfigFormBase {
           $name = $child['name'];
           $form[$name] = [
             '#type' => 'textfield',
-            '#title' => $this->t(ucwords(str_replace('_', ' ', $name))),
+            '#title' => ucwords(str_replace('_', ' ', $name)),
             '#default_value' => $config->get($name) ?? '',
           ];
         }
 
-        // Handle the group’s own attribute if it's mapped to a separate setting.
+        // Handle the group own attribute if it's mapped to a separate setting.
         foreach ($def['attribute'] as $attr => $source) {
           $form[$source] = [
             '#type' => 'textfield',
-            '#title' => $this->t(ucwords(str_replace('_', ' ', $source))),
+            '#title' => ucwords(str_replace('_', ' ', $source)),
             '#default_value' => $config->get($source) ?? '',
           ];
         }
@@ -94,22 +165,22 @@ class FeedSettingsForm extends ConfigFormBase {
         $value = $config->get($def['name']) ?? $def['default'] ?? ['value' => '', 'format' => 'full_html'];
         $form[$def['name']] = [
           '#type' => 'text_format',
-          '#title' => $this->t($def['label']),
+          '#title' => $def['label'],
           '#format' => $value['format'] ?? 'full_html',
           '#default_value' => $value['value'] ?? '',
-          '#description' => $this->t($def['description'] ?? ''),
+          '#description' => $def['description'] ?? '',
         ];
         continue;
       }
 
       $element = [
         '#type' => $def['type'],
-        '#title' => $this->t($def['label']),
+        '#title' => $def['label'],
         '#default_value' => $config->get($def['name']) ?? ($def['default'] ?? ''),
       ];
 
       if (!empty($def['description'])) {
-        $element['#description'] = $this->t($def['description']);
+        $element['#description'] = $def['description'];
       }
 
       if ($def['type'] === 'select' && isset($def['options'])) {
@@ -117,7 +188,7 @@ class FeedSettingsForm extends ConfigFormBase {
       }
 
       if ($def['type'] === 'checkbox') {
-        $element['#default_value'] = (bool) ($config->get($def['name']) ?? $def['default'] ?? false);
+        $element['#default_value'] = (bool) ($config->get($def['name']) ?? $def['default'] ?? FALSE);
       }
 
       $form[$def['name']] = $element;
@@ -148,11 +219,11 @@ class FeedSettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $feed = \Drupal::routeMatch()->getParameter('feed');
+    $feed = $this->routeMatch->getParameter('feed');
     $config = $this->configFactory()->getEditable("redbuoy_media_pod.settings.$feed");
 
     foreach ($this->getFieldDefinitions() as $def) {
-      // Handle text_format fields
+      // Handle text_format fields.
       if ($def['type'] === 'text_format') {
         $value = $form_state->getValue($def['name']);
         $config->set($def['name'], [
@@ -162,7 +233,7 @@ class FeedSettingsForm extends ConfigFormBase {
         continue;
       }
 
-      // Handle group fields and their children
+      // Handle group fields and their children.
       if ($def['type'] === 'group') {
         if (!empty($def['attribute'])) {
           foreach ($def['attribute'] as $attr => $source) {
@@ -179,12 +250,11 @@ class FeedSettingsForm extends ConfigFormBase {
         continue;
       }
 
-      // Default: scalar fields
+      // Default: scalar fields.
       $config->set($def['name'], $form_state->getValue($def['name']));
     }
 
     $config->save();
   }
-
 
 }

@@ -2,15 +2,89 @@
 
 namespace Drupal\redbuoy_media_pod\Controller;
 
-use Drupal\Core\Controller\ControllerBase;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Drupal\node\Entity\Node;
+use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\File\FileUrlGeneratorInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
+use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Returns RSS feed output for a specific podcast feed.
  */
-class PodcastFeedController extends ControllerBase {
+class PodcastFeedController implements ContainerInjectionInterface {
+
+  /**
+   * The config factory.
+   *
+   * @var \Drupal\Core\Config\ConfigFactoryInterface
+   */
+  protected ConfigFactoryInterface $configFactory;
+
+  /**
+   * The entity type manager.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  protected EntityTypeManagerInterface $entityTypeManager;
+
+  /**
+   * The file URL generator.
+   *
+   * @var \Drupal\Core\File\FileUrlGeneratorInterface
+   */
+  protected FileUrlGeneratorInterface $fileUrlGenerator;
+
+  /**
+   * The request stack.
+   *
+   * @var \Symfony\Component\HttpFoundation\RequestStack
+   */
+  protected RequestStack $requestStack;
+
+  /**
+   * Constructor.
+   *
+   * @param Drupal\Core\Config\ConfigFactoryInterface $configFactory
+   *   Config Factory Interface.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
+   *   Entity Type Manager.
+   * @param \Drupal\Core\File\FileUrlGeneratorInterface $fileUrlGenerator
+   *   File URL Generator.
+   * @param \Symfony\Component\HttpFoundation\RequestStack $requestStack
+   *   Request Stack.
+   */
+  final public function __construct(
+    ConfigFactoryInterface $configFactory,
+    EntityTypeManagerInterface $entityTypeManager,
+    FileUrlGeneratorInterface $fileUrlGenerator,
+    RequestStack $requestStack,
+  ) {
+    $this->configFactory = $configFactory;
+    $this->entityTypeManager = $entityTypeManager;
+    $this->fileUrlGenerator = $fileUrlGenerator;
+    $this->requestStack = $requestStack;
+  }
+
+  /**
+   * Create function.
+   *
+   * @param Symfony\Component\DependencyInjection\ContainerInterface $container
+   *   The container interface.
+   *
+   * @return static
+   */
+  public static function create(ContainerInterface $container): static {
+    return new static(
+      $container->get('config.factory'),
+      $container->get('entity_type.manager'),
+      $container->get('file_url_generator'),
+      $container->get('request_stack'),
+    );
+  }
 
   /**
    * Render the RSS feed for a given feed name.
@@ -19,22 +93,21 @@ class PodcastFeedController extends ControllerBase {
    *   The feed name (e.g. 'default', 'harmonia').
    *
    * @return \Symfony\Component\HttpFoundation\Response
+   *   Provides an XML output
    */
   public function renderFeed($feed): Response {
-    $feeds = \Drupal::config('redbuoy_media_pod.settings')->get('feeds') ?? [];
+    $feeds = $this->configFactory->get('redbuoy_media_pod.settings')->get('feeds') ?? [];
     if (!in_array($feed, $feeds)) {
       throw new NotFoundHttpException("Podcast feed '$feed' not found.");
     }
 
     // Load per-feed config and schema.
-    $config = \Drupal::config("redbuoy_media_pod.settings.$feed");
+    $config = $this->configFactory->get("redbuoy_media_pod.settings.$feed");
 
     $settings = [];
 
-
-
     // Query all episode nodes matching the feed.
-    $nids = \Drupal::entityTypeManager()->getStorage('node')->getQuery()
+    $nids = $this->entityTypeManager->getStorage('node')->getQuery()
       ->accessCheck(FALSE)
       ->condition('status', 1)
       ->condition('type', 'podcast_episode')
@@ -48,9 +121,9 @@ class PodcastFeedController extends ControllerBase {
     $last_modified_ts = 0;
     foreach ($nodes as $node) {
       // Get variables from this node.
-      $file = $node->get('field_audio_file')->entity ?? null;
+      $file = $node->get('field_audio_file')->entity ?? NULL;
       $size = filesize($file->getFileUri());
-      $url = \Drupal::service('file_url_generator')->generateAbsoluteString($file->getFileUri());
+      $url = $this->fileUrlGenerator->generateAbsoluteString($file->getFileUri());
       $ts = strtotime($node->get('field_podcast_date')->value ?? '') ?: $node->getCreatedTime();
       $duration = htmlspecialchars($node->get('field_duration')->value ?? '');
       $explicit = htmlspecialchars($node->get('field_explicit')->value ?? '');
@@ -67,32 +140,32 @@ class PodcastFeedController extends ControllerBase {
       if ($changed > $last_modified_ts) {
         $last_modified_ts = $changed;
       }
-      // Write the item XML
+      // Write the item XML.
       $rss_items .= "<item>\n";
-      $rss_items .= "<title>{$node->label()}</title>\n";
-      $rss_items .= "<link>{$node->toUrl('canonical', ['absolute' => TRUE])->toString()}</link>\n";
-      $rss_items .= "<guid isPermaLink=\"false\">{$node->uuid()}</guid>\n";
-      $rss_items .= "<enclosure url=\"{$url}\" length=\"{$size}\" type=\"audio/mpeg\" />\n";
-      $rss_items .= "<pubDate>{$this->rfc2822($ts)}</pubDate>\n";
-      $rss_items .= "<itunes:duration>$duration</itunes:duration>\n";
-      $rss_items .= "<itunes:author>$author</itunes:author>\n";
-      $rss_items .= "<itunes:explicit>$explicit</itunes:explicit>\n";
-      $rss_items .= "<itunes:episode>$episode_number</itunes:episode>\n";
-      $rss_items .= "<itunes:keywords>$keywords</itunes:keywords>\n";
-      $rss_items .= "<itunes:subtitle>$subtitle</itunes:subtitle>\n";
-      $rss_items .= "<itunes:summary><![CDATA[{$desc_plain}]]></itunes:summary>\n";
-      $rss_items .= "<description>{$desc_plain}</description>\n";
-      $rss_items .= "<content:encoded><![CDATA[{$desc_html}]]></content:encoded>\n";
-      $rss_items .= "<itunes:season>$season</itunes:season>\n";
-      $rss_items .= "<itunes:episodeType>$type</itunes:episodeType>\n";
-      $rss_items .= "</item>\n";
+      $rss_items .= "        <title>{$node->label()}</title>\n";
+      $rss_items .= "        <link>{$node->toUrl('canonical', ['absolute' => TRUE])->toString()}</link>\n";
+      $rss_items .= "        <guid isPermaLink=\"false\">{$node->uuid()}</guid>\n";
+      $rss_items .= "        <enclosure url=\"{$url}\" length=\"{$size}\" type=\"audio/mpeg\" />\n";
+      $rss_items .= "        <pubDate>{$this->rfc2822($ts)}</pubDate>\n";
+      $rss_items .= "        <itunes:duration>$duration</itunes:duration>\n";
+      $rss_items .= "        <itunes:author>$author</itunes:author>\n";
+      $rss_items .= "        <itunes:explicit>$explicit</itunes:explicit>\n";
+      $rss_items .= "        <itunes:episode>$episode_number</itunes:episode>\n";
+      $rss_items .= "        <itunes:keywords>$keywords</itunes:keywords>\n";
+      $rss_items .= "        <itunes:subtitle>$subtitle</itunes:subtitle>\n";
+      $rss_items .= "        <itunes:summary><![CDATA[{$desc_plain}]]></itunes:summary>\n";
+      $rss_items .= "        <description>{$desc_plain}</description>\n";
+      $rss_items .= "        <content:encoded><![CDATA[{$desc_html}]]></content:encoded>\n";
+      $rss_items .= "        <itunes:season>$season</itunes:season>\n";
+      $rss_items .= "        <itunes:episodeType>$type</itunes:episodeType>\n";
+      $rss_items .= "    </item>";
     }
     if ($last_modified_ts === 0) {
-        $last_modified_ts = time();
+      $last_modified_ts = time();
     }
 
     // Gather the channel data.
-    $config = \Drupal::config("redbuoy_media_pod.settings.$feed");
+    $config = $this->configFactory->get("redbuoy_media_pod.settings.$feed");
     $settings = $config->getRawData();
     $pod_title = htmlspecialchars($settings['podcast_title'] ?? '');
     $pod_keywords = htmlspecialchars($settings['podcast_keywords'] ?? '');
@@ -114,35 +187,35 @@ class PodcastFeedController extends ControllerBase {
 
     $rss_channel = "";
     $rss_channel .= "<title>$pod_title</title>\n";
-    $rss_channel .= "<itunes:keywords>$pod_keywords</itunes:keywords>\n";
-    $rss_channel .= "<description><![CDATA[{$desc_plain}]]></description>\n";
-    $rss_channel .= "<itunes:summary><![CDATA[{$desc_plain}]]></itunes:summary>\n";
-    $rss_channel .= "<content:encoded><![CDATA[{$desc_cdata}]]></content:encoded>\n";
-    $rss_channel .= "<language>$pod_lang</language>\n";
-    $rss_channel .= "<itunes:explicit>$pod_expl</itunes:explicit>\n";
-    $rss_channel .= "<itunes:author>$pod_auth</itunes:author>\n";
-    $rss_channel .= "<itunes:owner>\n";
-    $rss_channel .= "<itunes:name>$pod_own_name</itunes:name>\n";
-    $rss_channel .= "<itunes:email>$pod_own_emai</itunes:email>\n";
-    $rss_channel .= "</itunes:owner>\n";
+    $rss_channel .= "    <itunes:keywords>$pod_keywords</itunes:keywords>\n";
+    $rss_channel .= "    <description><![CDATA[{$desc_plain}]]></description>\n";
+    $rss_channel .= "    <itunes:summary><![CDATA[{$desc_plain}]]></itunes:summary>\n";
+    $rss_channel .= "    <content:encoded><![CDATA[{$desc_cdata}]]></content:encoded>\n";
+    $rss_channel .= "    <language>$pod_lang</language>\n";
+    $rss_channel .= "    <itunes:explicit>$pod_expl</itunes:explicit>\n";
+    $rss_channel .= "    <itunes:author>$pod_auth</itunes:author>\n";
+    $rss_channel .= "    <itunes:owner>\n";
+    $rss_channel .= "        <itunes:name>$pod_own_name</itunes:name>\n";
+    $rss_channel .= "        <itunes:email>$pod_own_emai</itunes:email>\n";
+    $rss_channel .= "    </itunes:owner>\n";
     if ($pod_category !== '') {
-      $rss_channel .= "<itunes:category text=\"{$pod_category}\">";
+      $rss_channel .= "    <itunes:category text=\"{$pod_category}\">\n";
       if ($pod_subcategory !== '') {
-        $rss_channel .= "<itunes:category text=\"{$pod_subcategory}\" />";
+        $rss_channel .= "        <itunes:category text=\"{$pod_subcategory}\" />\n";
       }
-      $rss_channel .= "</itunes:category>\n";
+      $rss_channel .= "    </itunes:category>\n";
     }
     if ($pod_image_url !== '') {
-      $rss_channel .= "<itunes:image href=\"{$pod_image_url}\" />\n";
+      $rss_channel .= "    <itunes:image href=\"{$pod_image_url}\" />\n";
     }
     if ($podcast_link !== '') {
-      $rss_channel .= "<link>{$podcast_link}</link>\n";
+      $rss_channel .= "    <link>{$podcast_link}</link>\n";
     }
     if ($podcast_type !== '') {
-      $rss_channel .= "<itunes:type>{$podcast_type}</itunes:type>\n";
+      $rss_channel .= "    <itunes:type>{$podcast_type}</itunes:type>\n";
     }
     if ($podcast_copyright !== '') {
-      $rss_channel .= "<copyright>{$podcast_copyright}</copyright>\n";
+      $rss_channel .= "    <copyright>{$podcast_copyright}</copyright>";
     }
 
     $rss = <<<XML
@@ -150,7 +223,6 @@ class PodcastFeedController extends ControllerBase {
 <rss version="2.0"
      xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd"
      xmlns:content="http://purl.org/rss/1.0/modules/content/">
-
   <channel>
     {$rss_channel}
     {$rss_items}
@@ -158,20 +230,45 @@ class PodcastFeedController extends ControllerBase {
 </rss>
 XML;
 
-  return $this->checkClientCacheAndHeaders($rss, $last_modified_ts);
+    return $this->checkClientCacheAndHeaders($rss, $last_modified_ts);
 
   }
 
-
+  /**
+   * Formats a timestamp in RFC 2822 (RSS) format.
+   *
+   * @param int $timestamp
+   *   The UNIX timestamp to format.
+   *
+   * @return string
+   *   The formatted date string.
+   */
   private function rfc2822($timestamp): string {
     return gmdate(DATE_RSS, $timestamp);
   }
 
+  /**
+   * Joins an array of strings into a newline-separated string.
+   *
+   * @param string[] $items
+   *   The array of strings to join.
+   *
+   * @return string
+   *   The newline-separated string.
+   */
   private function joinItems(array $items): string {
     return implode("\n", $items);
   }
 
-  // `stripHtmlToPlainText()` remains in case you want to use it for <description>
+  /**
+   * Strip HTML to plain text.
+   *
+   * @param string $html
+   *   The HTML to strip.
+   *
+   * @return string
+   *   Returns a plain text string.
+   */
   private function stripHtmlToPlainText(string $html): string {
     $html = preg_replace('/<(br|\/p|\/div|\/li)>/i', "\n", $html);
     $text = strip_tags($html);
@@ -179,36 +276,37 @@ XML;
     return trim($text);
   }
 
-/**
- * Adds caching headers (ETag and Last-Modified) and returns 304 if not modified.
- *
- * @param string $rss
- *   The full RSS XML string.
- * @param int $last_modified_ts
- *   The Unix timestamp of the most recently changed content.
- *
- * @return \Symfony\Component\HttpFoundation\Response|null
- *   A 304 response if client cache is valid, or null to proceed with normal response.
- */
-private function checkClientCacheAndHeaders(string $rss, int $last_modified_ts): ?Response {
-  $etag = md5($rss);
-  $last_modified_http = gmdate('D, d M Y H:i:s', $last_modified_ts) . ' GMT';
+  /**
+   * Adds caching headers (ETag and Last-Modified) returns 304 if not modified.
+   *
+   * @param string $rss
+   *   The full RSS XML string.
+   * @param int $last_modified_ts
+   *   The Unix timestamp of the most recently changed content.
+   *
+   * @return \Symfony\Component\HttpFoundation\Response|null
+   *   A 304 response if client cache is valid,
+   *   or null to proceed with normal response.
+   */
+  private function checkClientCacheAndHeaders(string $rss, int $last_modified_ts): ?Response {
+    $etag = md5($rss);
+    $last_modified_http = gmdate('D, d M Y H:i:s', $last_modified_ts) . ' GMT';
 
-  $request = \Drupal::request();
-  $if_modified_since = $request->headers->get('If-Modified-Since');
-  $if_none_match = $request->headers->get('If-None-Match');
+    $request = $this->requestStack->getCurrentRequest();
+    $if_modified_since = $request->headers->get('If-Modified-Since');
+    $if_none_match = $request->headers->get('If-None-Match');
 
-  if ($if_modified_since === $last_modified_http || $if_none_match === $etag) {
-    return new Response('', 304);
+    if ($if_modified_since === $last_modified_http || $if_none_match === $etag) {
+      return new Response('', 304);
+    }
+
+    $response = new Response($rss);
+    $response->headers->set('Content-Type', 'application/rss+xml');
+    $response->headers->set('ETag', $etag);
+    $response->headers->set('Last-Modified', $last_modified_http);
+    $response->setPrivate();
+    $response->setMaxAge(0);
+    return $response;
   }
-
-  $response = new Response($rss);
-  $response->headers->set('Content-Type', 'application/rss+xml');
-  $response->headers->set('ETag', $etag);
-  $response->headers->set('Last-Modified', $last_modified_http);
-  $response->setPrivate();  // Avoids interference from page cache
-  $response->setMaxAge(0); // Disable HTTP caching, but still allows 304 logic
-  return $response;
-}
 
 }

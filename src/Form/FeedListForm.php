@@ -5,12 +5,6 @@ namespace Drupal\redbuoy_media_pod\Form;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
-use Drupal\Core\Link;
-use Drupal\Component\Transliteration\TransliterationInterface;
-use Symfony\Component\Routing\Exception\RouteNotFoundException;
-use Drupal\Core\Routing\RouteProviderInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
-
 
 /**
  * Provides a form to manage the list of podcast feeds.
@@ -69,7 +63,7 @@ class FeedListForm extends FormBase {
     foreach ($feeds as $feed) {
       $label = \Drupal::config("redbuoy_media_pod.settings.$feed")->get('label') ?? $feed;
       $form['feeds'][$feed]['name'] = [
-        '#markup' => $label
+        '#markup' => $label,
       ];
 
       $form['feeds'][$feed]['view'] = [
@@ -121,11 +115,10 @@ class FeedListForm extends FormBase {
       $this->messenger()->addError('Please enter a feed name.');
       return;
     }
-    // store a human readable title
+    // Store a human readable title.
     \Drupal::configFactory()->getEditable("redbuoy_media_pod.settings.$new_feed")
-    ->set('label', $raw_feed)
-    ->save();
-
+      ->set('label', $raw_feed)
+      ->save();
 
     $config = \Drupal::configFactory()->getEditable('redbuoy_media_pod.settings');
     $feeds = $config->get('feeds') ?? [];
