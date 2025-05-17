@@ -1,17 +1,17 @@
 [
   {
     "name": "field_audio_file",
-    "label": "Audio File",
+    "label": "Podcast Episode Audio File",
     "type": "file",
-    "description": "Suggested audio file format is MP3",
+    "description": "Suggested audio file format is MP3, if the audio file is missing it simply will not be pulled into your feed, the node is still avaliable for use in views or other displays",
     "settings": {
       "file_extensions": "mp3 wav aac m4b"
     },
-    "required": true
+    "required": false
   },
   {
     "name": "field_duration",
-    "label": "Duration",
+    "label": "Podcast Episode Duration",
     "type": "string",
     "description": "Enter the episode duration in HH:MM:SS format (e.g., 00:15:30). This value appears in the RSS feed and helps apps display listening time.",
     "settings": {
@@ -20,13 +20,13 @@
   },
   {
     "name": "field_episode_number",
-    "label": "Episode Number",
+    "label": "Podcast Episode Number",
     "type": "integer",
     "description": "You will need to manually track your episode numbers."
   },
   {
     "name": "field_explicit",
-    "label": "Explicit Content",
+    "label": "Podcast Episode Explicit Content",
     "type": "list_string",
     "description": "This is critical, be honest and don't risk your content getting to children if it should not.",
     "settings": {
@@ -39,15 +39,15 @@
   },
   {
     "name": "field_author",
-    "label": "Author",
+    "label": "Podcast Episode Author",
     "type": "string",
     "description": "This should be the person responsible for the content."
   },
   {
     "name": "field_episode_image",
-    "label": "Episode Image",
+    "label": "Podcast Episode Image",
     "type": "image",
-    "description": "You may not have episode images, and if you do there is no guarantee the Podcast app will display it.",
+    "description": "You may not have episode images, and if you do there is no guarantee the Podcast app will display it. However you can pull them into your own views for local display",
     "settings": {
       "file_extensions": "png gif jpg jpeg webp"
     },
@@ -55,7 +55,7 @@
   },
   {
     "name": "field_episode_type",
-    "label": "Episode Type",
+    "label": "Podcast Episode Type",
     "type": "list_string",
     "description": "Note: If this is a teaser for a paid episode, you can include a link to the full version (e.g., on Patreon) in the description field. Many podcast apps will display that link directly to your listeners.",
     "settings": {
@@ -68,28 +68,28 @@
   },
   {
     "name": "field_keywords",
-    "label": "iTunes Keywords",
+    "label": "Podcast Episode iTunes Keywords",
     "description": "Enter up to 12 comma-separated keywords to help with search.",
     "type": "string",
     "required": false
   },
   {
     "name": "field_podcast_date",
-    "label": "Podcast Date",
+    "label": "Podcast Episode Date",
     "type": "datetime",
     "description": "",
     "required": true
   },
   {
     "name": "field_podcast_description",
-    "label": "Podcast Description",
+    "label": "Podcast Episode Description",
     "description": "Write a description of this episode, it may be displayed as either plain text or HTML content depending on the podcast app. Most modern apps should provide the HTML rich text provided by the editor.",
     "type": "text_long",
     "required": true
   },
   {
     "name": "field_season_number",
-    "label": "Season Number",
+    "label": "Podcast Episode Season Number",
     "type": "integer",
     "description": "You will need to manually track the season numbers.",
     "settings": {
@@ -102,16 +102,16 @@
   },
   {
     "name": "field_subtitle",
-    "label": "Subtitle",
+    "label": "Podcast Episode Subtitle",
     "type": "string",
-    "description": "",
+    "description": "Not Required, but perhaps useful",
     "required": false
   },
   {
     "name": "field_podcast_feed",
-    "label": "Podcast Feed",
+    "label": "Podcast Episode Feed",
     "type": "list_string",
-    "description": "Select the podcast feed this episode belongs to.",
+    "description": "Select the podcast feed this episode belongs to. This is how podcast content streams are managed",
     "required": true,
     "settings": {
       "allowed_values_function": "redbuoy_media_pod_allowed_feed_values"

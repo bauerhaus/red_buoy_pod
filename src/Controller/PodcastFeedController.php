@@ -151,7 +151,7 @@ class PodcastFeedController implements ContainerInjectionInterface {
     foreach ($nodes as $node) {
       /** @var \Drupal\file\FileInterface|null $file */
       $file = $node->get('field_audio_file')->entity ?? NULL;
-
+      // Verify the audio file exits for the podcast feed.
       if (!$file instanceof FileInterface) {
         $this->logger->warning(
           'Podcast node @nid has no valid audio file.',
@@ -159,7 +159,7 @@ class PodcastFeedController implements ContainerInjectionInterface {
         );
         continue;
       }
-
+      // Verify the node actully exists.
       $uri = $file->getFileUri();
       $real_path = $this->fileSystem->realpath($uri);
 
@@ -174,7 +174,6 @@ class PodcastFeedController implements ContainerInjectionInterface {
       // Safe to proceed.
       $size = filesize($real_path);
       $url = $this->fileUrlGenerator->generateAbsoluteString($uri);
-
       $ts = strtotime($node->get('field_podcast_date')->value ?? '') ?: $node->getCreatedTime();
       $duration = htmlspecialchars($node->get('field_duration')->value ?? '');
       $explicit = htmlspecialchars($node->get('field_explicit')->value ?? '');
@@ -188,32 +187,33 @@ class PodcastFeedController implements ContainerInjectionInterface {
       $type = htmlspecialchars($node->get('field_episode_type')->value ?? '');
       $author = htmlspecialchars($node->get('field_author')->value ?? '');
 
+      // Track the modified times for the HTML header.
       $changed = $node->getChangedTime();
       if ($changed > $last_modified_ts) {
         $last_modified_ts = $changed;
       }
 
       // Now build the <item>.
-      $rss_items .= "<item>\n";
-      $rss_items .= "  <title>{$node->label()}</title>\n";
-      $rss_items .= "  <link>{$node->toUrl('canonical', ['absolute' => TRUE])->toString()}</link>\n";
-      $rss_items .= "  <guid isPermaLink=\"false\">{$node->uuid()}</guid>\n";
-      $rss_items .= "  <enclosure url=\"{$url}\" length=\"{$size}\" type=\"audio/mpeg\" />\n";
-      $rss_items .= "  <pubDate>{$this->rfc2822($ts)}</pubDate>\n";
-      $rss_items .= "  <itunes:duration>$duration</itunes:duration>\n";
-      $rss_items .= "  <itunes:author>$author</itunes:author>\n";
-      $rss_items .= "  <itunes:explicit>$explicit</itunes:explicit>\n";
-      $rss_items .= "  <itunes:episode>$episode_number</itunes:episode>\n";
-      $rss_items .= "  <itunes:keywords>$keywords</itunes:keywords>\n";
-      $rss_items .= "  <itunes:subtitle>$subtitle</itunes:subtitle>\n";
-      $rss_items .= "  <itunes:summary><![CDATA[{$desc_plain}]]></itunes:summary>\n";
-      $rss_items .= "  <description>{$desc_plain}</description>\n";
-      $rss_items .= "  <content:encoded><![CDATA[{$desc_html}]]></content:encoded>\n";
-      $rss_items .= "  <itunes:season>$season</itunes:season>\n";
-      $rss_items .= "  <itunes:episodeType>$type</itunes:episodeType>\n";
-      $rss_items .= "</item>\n";
+      $rss_items .= " <item>\n";
+      $rss_items .= "      <title>{$node->label()}</title>\n";
+      $rss_items .= "      <link>{$node->toUrl('canonical', ['absolute' => TRUE])->toString()}</link>\n";
+      $rss_items .= "      <guid isPermaLink=\"false\">{$node->uuid()}</guid>\n";
+      $rss_items .= "      <enclosure url=\"{$url}\" length=\"{$size}\" type=\"audio/mpeg\" />\n";
+      $rss_items .= "      <pubDate>{$this->rfc2822($ts)}</pubDate>\n";
+      $rss_items .= "      <itunes:duration>$duration</itunes:duration>\n";
+      $rss_items .= "      <itunes:author>$author</itunes:author>\n";
+      $rss_items .= "      <itunes:explicit>$explicit</itunes:explicit>\n";
+      $rss_items .= "      <itunes:episode>$episode_number</itunes:episode>\n";
+      $rss_items .= "      <itunes:keywords>$keywords</itunes:keywords>\n";
+      $rss_items .= "      <itunes:subtitle>$subtitle</itunes:subtitle>\n";
+      $rss_items .= "      <itunes:summary><![CDATA[{$desc_plain}]]></itunes:summary>\n";
+      $rss_items .= "      <description>{$desc_plain}</description>\n";
+      $rss_items .= "      <content:encoded><![CDATA[{$desc_html}]]></content:encoded>\n";
+      $rss_items .= "      <itunes:season>$season</itunes:season>\n";
+      $rss_items .= "      <itunes:episodeType>$type</itunes:episodeType>\n";
+      $rss_items .= "    </item>";
     }
-
+    // Set a default for the last modified time if it is still empty.
     if ($last_modified_ts === 0) {
       $last_modified_ts = time();
     }
@@ -239,6 +239,7 @@ class PodcastFeedController implements ContainerInjectionInterface {
     $podcast_type = htmlspecialchars($config->get('itunes_type') ?? 'episodic');
     $podcast_copyright = htmlspecialchars($config->get('podcast_copyright') ?? 'episodic');
 
+    // Set the channel data into the XML.
     $rss_channel = "";
     $rss_channel .= "<title>$pod_title</title>\n";
     $rss_channel .= "    <itunes:keywords>$pod_keywords</itunes:keywords>\n";
@@ -272,6 +273,7 @@ class PodcastFeedController implements ContainerInjectionInterface {
       $rss_channel .= "    <copyright>{$podcast_copyright}</copyright>";
     }
 
+    // Write the XML.
     $rss = <<<XML
 <?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0"
@@ -279,7 +281,7 @@ class PodcastFeedController implements ContainerInjectionInterface {
      xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
     {$rss_channel}
-    {$rss_items}
+  {$rss_items}
   </channel>
 </rss>
 XML;
@@ -299,19 +301,6 @@ XML;
    */
   private function rfc2822($timestamp): string {
     return gmdate(DATE_RSS, $timestamp);
-  }
-
-  /**
-   * Joins an array of strings into a newline-separated string.
-   *
-   * @param string[] $items
-   *   The array of strings to join.
-   *
-   * @return string
-   *   The newline-separated string.
-   */
-  private function joinItems(array $items): string {
-    return implode("\n", $items);
   }
 
   /**

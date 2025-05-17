@@ -1,0 +1,14 @@
+{
+  "name": "drupal/redbuoy_media_pod",
+  "type": "drupal-module",
+  "description": "A lightweight podcast publishing system for Drupal 10 and 11, supporting multiple feeds from one content type.",
+  "keywords": [
+    "podcast",
+    "audio",
+    "feed",
+    "rss"
+  ],
+  "license": "GPL-2.0-or-later",
+  "minimum-stability": "stable",
+  "require": {}
+}
