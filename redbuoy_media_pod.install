@@ -4,6 +4,73 @@ use Drupal\node\Entity\NodeType;
 use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\Core\Entity\Entity\EntityFormDisplay;
+use Drupal\Core\Entity\Entity\EntityViewDisplay;
+
+/**
+ * Add field_transcript to podcast_episode content type.
+ */
+function redbuoy_media_pod_update_9001() {
+  $field_name = 'field_transcript';
+  $content_type = 'podcast_episode';
+
+  // Create field storage if it doesn't already exist.
+  if (!FieldStorageConfig::loadByName('node', $field_name)) {
+    FieldStorageConfig::create([
+      'field_name' => $field_name,
+      'entity_type' => 'node',
+      'type' => 'text_long',
+      'settings' => [],
+      'cardinality' => 1,
+      'translatable' => TRUE,
+    ])->save();
+  }
+
+  // Create the field instance on the content type.
+  if (!FieldConfig::loadByName('node', $content_type, $field_name)) {
+    FieldConfig::create([
+      'field_name' => $field_name,
+      'entity_type' => 'node',
+      'bundle' => $content_type,
+      'label' => 'Transcript',
+      'description' => 'The full transcript of the episode.',
+      'required' => FALSE,
+      'translatable' => TRUE,
+      'settings' => [],
+    ])->save();
+  }
+
+  // Add to default form display.
+  $form_display = EntityFormDisplay::load("node.{$content_type}.default");
+  if (!$form_display) {
+    $form_display = EntityFormDisplay::create([
+      'targetEntityType' => 'node',
+      'bundle' => $content_type,
+      'mode' => 'default',
+      'status' => TRUE,
+    ]);
+  }
+  $form_display->setComponent($field_name, [
+    'type' => 'text_textarea',
+    'weight' => 20,
+  ])->save();
+
+  // Add to default view display.
+  $view_display = EntityViewDisplay::load("node.{$content_type}.default");
+  if (!$view_display) {
+    $view_display = EntityViewDisplay::create([
+      'targetEntityType' => 'node',
+      'bundle' => $content_type,
+      'mode' => 'default',
+      'status' => TRUE,
+    ]);
+  }
+  $view_display->setComponent($field_name, [
+    'label' => 'above',
+    'type' => 'text_default',
+    'weight' => 20,
+  ])->save();
+}
+
 
 /**
  * Implements hook_install().
