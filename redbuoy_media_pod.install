@@ -32,7 +32,7 @@ function redbuoy_media_pod_update_9001() {
       'entity_type' => 'node',
       'bundle' => $content_type,
       'label' => 'Transcript',
-      'description' => 'The full transcript of the episode.',
+      'description' => 'The full transcript of the episode. If there is content in this area there will be a link back to the episode node, be sure to expose the field in the node display',
       'required' => FALSE,
       'translatable' => TRUE,
       'settings' => [],

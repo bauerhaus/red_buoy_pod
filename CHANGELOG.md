@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.91] – 2025-05-20
+
+### Added
+- New field `field_transcript` added to `podcast_episode` content type.
+  - Stored as `text_long`.
+  - Automatically placed in the default form and view displays.
+  - Used for full-text episode transcripts.
+- Included update hook (`redbuoy_media_pod_update_9001`) to add the field on existing installations.
+
 ## [0.9.0] – 2025-05-16
 ### Status
 Initial beta release. This module is feature-complete and ready for real-world testing. Core functionality is stable, but internal architecture and configuration structure may still change before 1.0.0.

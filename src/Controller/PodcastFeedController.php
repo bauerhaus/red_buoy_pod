@@ -182,11 +182,16 @@ class PodcastFeedController implements ContainerInjectionInterface {
       $subtitle = htmlspecialchars($node->get('field_subtitle')->value ?? '');
       $desc_html = $node->get('field_podcast_description')->value ?? '';
       $desc_html = str_replace(']]>', ']]&gt;', $desc_html);
-      $desc_plain = $this->stripHtmlToPlainText($desc_html);
+      $desc_item_plain = $this->stripHtmlToPlainText($desc_html);
       $season = htmlspecialchars($node->get('field_season_number')->value ?? '');
       $type = htmlspecialchars($node->get('field_episode_type')->value ?? '');
       $author = htmlspecialchars($node->get('field_author')->value ?? '');
-
+      $transcript_text = trim($node->get('field_transcript')->value ?? '');
+      $transcript_url = $node->toUrl('canonical', ['absolute' => TRUE])->toString();
+      if (!empty($transcript_text)) {
+        $desc_item_plain .= "\n\nTranscript available at: $transcript_url";
+        $desc_html .= '<p><a href="' . $transcript_url . '">Read the transcript</a></p>';
+      }
       // Track the modified times for the HTML header.
       $changed = $node->getChangedTime();
       if ($changed > $last_modified_ts) {
@@ -206,11 +211,15 @@ class PodcastFeedController implements ContainerInjectionInterface {
       $rss_items .= "      <itunes:episode>$episode_number</itunes:episode>\n";
       $rss_items .= "      <itunes:keywords>$keywords</itunes:keywords>\n";
       $rss_items .= "      <itunes:subtitle>$subtitle</itunes:subtitle>\n";
-      $rss_items .= "      <itunes:summary><![CDATA[{$desc_plain}]]></itunes:summary>\n";
-      $rss_items .= "      <description>{$desc_plain}</description>\n";
+      $rss_items .= "      <itunes:summary><![CDATA[{$desc_item_plain}]]></itunes:summary>\n";
+      $rss_items .= "      <description>{$desc_item_plain}</description>\n";
       $rss_items .= "      <content:encoded><![CDATA[{$desc_html}]]></content:encoded>\n";
       $rss_items .= "      <itunes:season>$season</itunes:season>\n";
       $rss_items .= "      <itunes:episodeType>$type</itunes:episodeType>\n";
+      if (!empty($transcript_text)) {
+        $rss_items .= "      <podcast:transcript url='$transcript_url' type='text/html' />\n";
+      }
+
       $rss_items .= "    </item>";
     }
     // Set a default for the last modified time if it is still empty.
@@ -276,7 +285,7 @@ class PodcastFeedController implements ContainerInjectionInterface {
     // Write the XML.
     $rss = <<<XML
 <?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0"
+<rss xmlns:podcast="https://podcastindex.org/namespace/1.0" version="2.0"
      xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd"
      xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>

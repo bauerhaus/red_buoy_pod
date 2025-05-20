@@ -64,6 +64,7 @@ USAGE
 -----
 
 - Feeds are generated automatically from any Podcast Episode node tagged with a Podcast Feed and an MP3
+- If you put content into the transcript field in the episode, a transcript back link to the episode will be created. Be sure to expose the transcript field in the node display to endure it is available.
 - You do not need to create Views, although Views may help you display episode lists
 - Multiple feeds can be created without separate content types
 - The module’s routing system handles feed generation at `/podcast/feed/{feed-id}`
