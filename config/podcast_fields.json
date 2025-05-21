@@ -1,6 +1,6 @@
 [
   {
-    "name": "field_audio_file",
+    "name": "field_podcast_audio",
     "label": "Podcast Episode Audio File",
     "type": "file",
     "description": "Suggested audio file format is MP3, if the audio file is missing it simply will not be pulled into your feed, the node is still avaliable for use in views or other displays",
@@ -10,7 +10,7 @@
     "required": false
   },
   {
-    "name": "field_duration",
+    "name": "field_podcast_duration",
     "label": "Podcast Episode Duration",
     "type": "string",
     "description": "Enter the episode duration in HH:MM:SS format (e.g., 00:15:30). This value appears in the RSS feed and helps apps display listening time.",
@@ -19,13 +19,13 @@
     }
   },
   {
-    "name": "field_episode_number",
+    "name": "field_podcast_episode_num",
     "label": "Podcast Episode Number",
     "type": "integer",
     "description": "You will need to manually track your episode numbers."
   },
   {
-    "name": "field_explicit",
+    "name": "field_podcast_explicit",
     "label": "Podcast Episode Explicit Content",
     "type": "list_string",
     "description": "This is critical, be honest and don't risk your content getting to children if it should not.",
@@ -38,13 +38,13 @@
     }
   },
   {
-    "name": "field_author",
+    "name": "field_podcast_author",
     "label": "Podcast Episode Author",
     "type": "string",
     "description": "This should be the person responsible for the content."
   },
   {
-    "name": "field_episode_image",
+    "name": "field_podcast_episode_image",
     "label": "Podcast Episode Image",
     "type": "image",
     "description": "You may not have episode images, and if you do there is no guarantee the Podcast app will display it. However you can pull them into your own views for local display",
@@ -54,7 +54,7 @@
     "required": false
   },
   {
-    "name": "field_episode_type",
+    "name": "field_podcast_episode_type",
     "label": "Podcast Episode Type",
     "type": "list_string",
     "description": "Note: If this is a teaser for a paid episode, you can include a link to the full version (e.g., on Patreon) in the description field. Many podcast apps will display that link directly to your listeners.",
@@ -67,7 +67,7 @@
     }
   },
   {
-    "name": "field_keywords",
+    "name": "field_podcast_keywords",
     "label": "Podcast Episode iTunes Keywords",
     "description": "Enter up to 12 comma-separated keywords to help with search.",
     "type": "string",
@@ -81,14 +81,14 @@
     "required": true
   },
   {
-    "name": "field_podcast_description",
+    "name": "field_podcast_descp",
     "label": "Podcast Episode Description",
     "description": "Write a description of this episode, it may be displayed as either plain text or HTML content depending on the podcast app. Most modern apps should provide the HTML rich text provided by the editor.",
     "type": "text_long",
     "required": true
   },
   {
-    "name": "field_season_number",
+    "name": "field_podcast_season_num",
     "label": "Podcast Episode Season Number",
     "type": "integer",
     "description": "You will need to manually track the season numbers.",
@@ -101,7 +101,7 @@
     "required": false
   },
   {
-    "name": "field_subtitle",
+    "name": "field_podcast_subtitle",
     "label": "Podcast Episode Subtitle",
     "type": "string",
     "description": "Not Required, but perhaps useful",
@@ -116,5 +116,13 @@
     "settings": {
       "allowed_values_function": "redbuoy_media_pod_allowed_feed_values"
     }
+  },
+  {
+    "name": "field_podcast_transcript",
+    "type": "text_long",
+    "label": "Podcast Transcript",
+    "description": "The full transcript of the episode. If this field contains text, a link to the transcript will be included in the RSS feed. Be sure you expose this field in the node display if you are going to use it",
+    "required": false,
+    "settings": {}
   }
 ]
