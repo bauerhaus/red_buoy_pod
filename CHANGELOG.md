@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.93] – 2025-0-14
+
+### bugfix
+- Edited controller to match episode field names
+
+## [0.92] – 2025-05-22
+
+### changed
+- Edited the field names to indicate they are part of the "podcast" module for  easier determination of which fields belong to this module
+
 ## [0.91] – 2025-05-20
 
 ### Added
