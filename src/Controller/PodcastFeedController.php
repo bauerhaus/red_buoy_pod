@@ -134,7 +134,6 @@ class PodcastFeedController implements ContainerInjectionInterface {
     $config = $this->configFactory->get("redbuoy_media_pod.settings.$feed");
 
     $settings = [];
-
     // Query all episode nodes matching the feed.
     $nids = $this->entityTypeManager->getStorage('node')->getQuery()
       ->accessCheck(FALSE)
@@ -150,7 +149,7 @@ class PodcastFeedController implements ContainerInjectionInterface {
     $last_modified_ts = 0;
     foreach ($nodes as $node) {
       /** @var \Drupal\file\FileInterface|null $file */
-      $file = $node->get('field_audio_file')->entity ?? NULL;
+      $file = $node->get('field_podcast_audio')->entity ?? NULL;
       // Verify the audio file exits for the podcast feed.
       if (!$file instanceof FileInterface) {
         $this->logger->warning(
@@ -175,18 +174,18 @@ class PodcastFeedController implements ContainerInjectionInterface {
       $size = filesize($real_path);
       $url = $this->fileUrlGenerator->generateAbsoluteString($uri);
       $ts = strtotime($node->get('field_podcast_date')->value ?? '') ?: $node->getCreatedTime();
-      $duration = htmlspecialchars($node->get('field_duration')->value ?? '');
-      $explicit = htmlspecialchars($node->get('field_explicit')->value ?? '');
-      $episode_number = htmlspecialchars($node->get('field_episode_number')->value ?? '');
-      $keywords = htmlspecialchars($node->get('field_keywords')->value ?? '');
-      $subtitle = htmlspecialchars($node->get('field_subtitle')->value ?? '');
-      $desc_html = $node->get('field_podcast_description')->value ?? '';
+      $duration = htmlspecialchars($node->get('field_podcast_duration')->value ?? '');
+      $explicit = htmlspecialchars($node->get('field_podcast_explicit')->value ?? '');
+      $episode_number = htmlspecialchars($node->get('field_podcast_episode_num')->value ?? '');
+      $keywords = htmlspecialchars($node->get('field_podcast_keywords')->value ?? '');
+      $subtitle = htmlspecialchars($node->get('field_podcast_subtitle')->value ?? '');
+      $desc_html = $node->get('field_podcast_descp')->value ?? '';
       $desc_html = str_replace(']]>', ']]&gt;', $desc_html);
       $desc_item_plain = $this->stripHtmlToPlainText($desc_html);
-      $season = htmlspecialchars($node->get('field_season_number')->value ?? '');
-      $type = htmlspecialchars($node->get('field_episode_type')->value ?? '');
-      $author = htmlspecialchars($node->get('field_author')->value ?? '');
-      $transcript_text = trim($node->get('field_transcript')->value ?? '');
+      $season = htmlspecialchars($node->get('field_podcast_season_num')->value ?? '');
+      $type = htmlspecialchars($node->get('field_podcast_episode_type')->value ?? '');
+      $author = htmlspecialchars($node->get('field_podcast_author')->value ?? '');
+      $transcript_text = trim($node->get('field_podcast_transcript')->value ?? '');
       $transcript_url = $node->toUrl('canonical', ['absolute' => TRUE])->toString();
       if (!empty($transcript_text)) {
         $desc_item_plain .= "\n\nTranscript available at: $transcript_url";
