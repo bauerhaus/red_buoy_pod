@@ -383,7 +383,7 @@ XML;
     }
 
     $response = new Response($rss);
-    $response->headers->set('Content-Type', 'application/rss+xml');
+    $response->headers->set('Content-Type', 'application/rss+xml; charset=UTF-8');
     $response->headers->set('ETag', $etag);
     $response->headers->set('Last-Modified', $last_modified_http);
     $response->setPrivate();
