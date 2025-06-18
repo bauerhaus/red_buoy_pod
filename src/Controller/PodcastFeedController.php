@@ -277,6 +277,9 @@ class PodcastFeedController implements ContainerInjectionInterface {
     if ($podcast_type !== '') {
       $rss_channel .= "    <itunes:type>{$podcast_type}</itunes:type>\n";
     }
+    if (!empty($settings['itunes_update_frequency'])) {
+      $rss_channel .= "    <itunes:updateFrequency>" . htmlspecialchars($settings['itunes_update_frequency']) . "</itunes:updateFrequency>\n";
+    }
     if ($podcast_copyright !== '') {
       $rss_channel .= "    <copyright>{$podcast_copyright}</copyright>";
     }

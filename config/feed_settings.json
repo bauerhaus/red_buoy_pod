@@ -149,5 +149,21 @@
     "xml_tag": "link",
     "cdata": false,
     "description": "URL to the public landing page for this podcast feed"
+  },
+  {
+    "name": "itunes_update_frequency",
+    "label": "Update Frequency",
+    "type": "select",
+    "default": "weekly",
+    "required": true,
+    "xml_tag": "itunes:updateFrequency",
+    "cdata": false,
+    "options": {
+      "daily": "Daily",
+      "weekly": "Weekly",
+      "biweekly": "Biweekly",
+      "monthly": "Monthly"
+    },
+    "description": "How often you typically publish episodes. Required by Apple Podcasts."
   }
 ]

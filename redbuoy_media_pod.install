@@ -7,6 +7,37 @@ use Drupal\Core\Entity\Entity\EntityFormDisplay;
 use Drupal\Core\Entity\Entity\EntityViewDisplay;
 
 /**
+ * Adds the new 'itunes_update_frequency' field to feed settings.
+ */
+function redbuoy_media_pod_update_8001() {
+  $module_path = \Drupal::service('extension.list.module')->getPath('redbuoy_media_pod');
+  $settings_path = DRUPAL_ROOT . '/' . $module_path . '/config/feed_settings.json';
+
+  if (!file_exists($settings_path)) {
+    \Drupal::logger('redbuoy_media_pod')->error('feed_settings.json missing during update.');
+    return;
+  }
+
+  $settings_defs = json_decode(file_get_contents($settings_path), TRUE);
+  $protected = [];
+  $editable = [];
+
+  foreach ($settings_defs as $def) {
+    if (!empty($def['required'])) {
+      $protected[] = $def;
+    } else {
+      $editable[] = $def;
+    }
+  }
+
+  \Drupal::configFactory()->getEditable('redbuoy_media_pod.settings')
+    ->set('feed_protected', $protected)
+    ->set('feed_fields', $editable)
+    ->save();
+}
+
+
+/**
  * Implements hook_install().
  */
 function redbuoy_media_pod_install() {
