@@ -4,6 +4,7 @@
 
 ### bug fix
 - Added function to clean smart quotes in description for Feed
+- edited headers to include utf8
 
 ## [0.94] – 2025-18-14
 
