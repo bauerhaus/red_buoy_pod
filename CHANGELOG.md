@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.95] – 2025-18-14
+
+### bug fix
+- Added function to clean smart quotes in description for Feed
+
 ## [0.94] – 2025-18-14
 
 ### Feature addition
