@@ -1,6 +1,11 @@
 # Changelog
 
-## [0.93] – 2025-0-14
+## [0.94] – 2025-18-14
+
+### Feature addition
+- Added setting for Apple podcast "Update Frequency"
+
+## [0.93] – 2025-06-14
 
 ### bugfix
 - Edited controller to match episode field names
