@@ -134,7 +134,9 @@ class PodcastFeedController implements ContainerInjectionInterface {
    *   The cleaned, UTF-8 safe string with common smart characters replaced.
    */
   private function normalizeText(string $text): string {
-    $text = mb_convert_encoding($text, 'UTF-8', 'auto');
+    // If content was misencoded as Windows-1252, fix it.
+    $text = iconv('Windows-1252', 'UTF-8//IGNORE', $text);
+
     return strtr($text, [
       "\xC2\x82" => "'", "\xC2\x84" => '"', "\xC2\x8B" => "'", "\xC2\x91" => "'", "\xC2\x92" => "'",
       "\xC2\x93" => '"', "\xC2\x94" => '"', "\xC2\x9B" => "'", "\xE2\x80\x98" => "'", "\xE2\x80\x99" => "'",
