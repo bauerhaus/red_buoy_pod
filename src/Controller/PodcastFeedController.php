@@ -116,36 +116,6 @@ class PodcastFeedController implements ContainerInjectionInterface {
   }
 
   /**
-   * Normalizes text encoding and replaces problematic smart characters.
-   *
-   * This function ensures that input text is valid UTF-8 and replaces common
-   * non-ASCII characters (such as smart quotes, en dashes, and ellipses)
-   * with their plain-text equivalents. It is intended for use when generating
-   * XML feeds or other strict-encoding contexts (e.g., RSS, Apple Podcasts).
-   *
-   * Useful when content originates from WYSIWYG editors or word processors
-   * that embed non-standard Unicode characters or when character encoding
-   * mismatches occur during database storage or retrieval.
-   *
-   * @param string $text
-   *   The input string to normalize.
-   *
-   * @return string
-   *   The cleaned, UTF-8 safe string with common smart characters replaced.
-   */
-  private function normalizeText(string $text): string {
-    // If content was misencoded as Windows-1252, fix it.
-    $text = iconv('Windows-1252', 'UTF-8//IGNORE', $text);
-
-    return strtr($text, [
-      "\xC2\x82" => "'", "\xC2\x84" => '"', "\xC2\x8B" => "'", "\xC2\x91" => "'", "\xC2\x92" => "'",
-      "\xC2\x93" => '"', "\xC2\x94" => '"', "\xC2\x9B" => "'", "\xE2\x80\x98" => "'", "\xE2\x80\x99" => "'",
-      "\xE2\x80\x9C" => '"', "\xE2\x80\x9D" => '"', "\xE2\x80\x93" => '-', "\xE2\x80\x94" => '--',
-      "\xE2\x80\xA6" => '...', "\xC2\xA0" => ' ',
-    ]);
-  }
-
-  /**
    * Render the RSS feed for a given feed name.
    *
    * @param string $feed
@@ -209,7 +179,7 @@ class PodcastFeedController implements ContainerInjectionInterface {
       $episode_number = htmlspecialchars($node->get('field_podcast_episode_num')->value ?? '');
       $keywords = htmlspecialchars($node->get('field_podcast_keywords')->value ?? '');
       $subtitle = htmlspecialchars($node->get('field_podcast_subtitle')->value ?? '');
-      $desc_html = $this->normalizeText($node->get('field_podcast_descp')->value ?? '');
+      $desc_html = htmlspecialchars($node->get('field_podcast_descp')->value ?? '');
       $desc_html = str_replace(']]>', ']]&gt;', $desc_html);
       $desc_item_plain = $this->stripHtmlToPlainText($desc_html);
       $season = htmlspecialchars($node->get('field_podcast_season_num')->value ?? '');

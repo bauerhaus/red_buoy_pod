@@ -1,27 +1,33 @@
 # Changelog
+## [0.9.6] – 2025-06-23
 
-## [0.95] – 2025-18-14
+### Fix
+- Replaced description sanitization logic: previous approach removed smart quotes at render time, which caused encoding issues in some feeds.
+- New implementation now filters input during feed settings form submission, ensuring stored values are ASCII-safe and avoiding silent corruption.
+
+
+## [0.9.5] – 2025-18-14
 
 ### bug fix
 - Added function to clean smart quotes in description for Feed
 - edited headers to include utf8
 
-## [0.94] – 2025-18-14
+## [0.9.4] – 2025-18-14
 
 ### Feature addition
 - Added setting for Apple podcast "Update Frequency"
 
-## [0.93] – 2025-06-14
+## [0.9.3] – 2025-06-14
 
 ### bugfix
 - Edited controller to match episode field names
 
-## [0.92] – 2025-05-22
+## [0.9.2] – 2025-05-22
 
 ### changed
 - Edited the field names to indicate they are part of the "podcast" module for  easier determination of which fields belong to this module
 
-## [0.91] – 2025-05-20
+## [0.9.1] – 2025-05-20
 
 ### Added
 - New field `field_transcript` added to `podcast_episode` content type.
