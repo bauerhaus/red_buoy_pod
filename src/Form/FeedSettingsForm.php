@@ -227,9 +227,10 @@ class FeedSettingsForm extends ConfigFormBase {
       if ($def['type'] === 'text_format') {
         $value = $form_state->getValue($def['name']);
         $config->set($def['name'], [
-          'value' => $value['value'],
+          'value' => $this->sanitizeAscii($value['value']),
           'format' => $value['format'],
         ]);
+
         continue;
       }
 
@@ -237,24 +238,62 @@ class FeedSettingsForm extends ConfigFormBase {
       if ($def['type'] === 'group') {
         if (!empty($def['attribute'])) {
           foreach ($def['attribute'] as $attr => $source) {
-            $config->set($source, $form_state->getValue($source));
+            $config->set($source, $this->sanitizeAscii($form_state->getValue($source)));
+
           }
         }
 
         if (!empty($def['children'])) {
           foreach ($def['children'] as $child) {
             $name = $child['name'];
-            $config->set($name, $form_state->getValue($name));
+            $config->set($name, $this->sanitizeAscii($form_state->getValue($name)));
+
           }
         }
         continue;
       }
 
       // Default: scalar fields.
-      $config->set($def['name'], $form_state->getValue($def['name']));
+      $value = $form_state->getValue($def['name']);
+      if (is_string($value)) {
+        $value = $this->sanitizeAscii($value);
+      }
+      $config->set($def['name'], $value);
+
     }
 
     $config->save();
+  }
+
+  /**
+   * Sanitizes a string to ASCII-compatible characters.
+   */
+  private function sanitizeAscii(string $input): string {
+    // Convert to UTF-8, strip non-printables.
+    $input = mb_convert_encoding($input, 'UTF-8', 'UTF-8');
+    $input = preg_replace('/[^\PC\s]/u', '', $input);
+
+    // Replace smart quotes, dashes, ellipses, etc.
+    $replacements = [
+      // Smart quotes and primes.
+      "\xE2\x80\x98" => "'",
+      "\xE2\x80\x99" => "'",
+      "\xE2\x80\x9C" => '"',
+      "\xE2\x80\x9D" => '"',
+      "\xE2\x80\xB2" => "'",
+      "\xE2\x80\xB3" => '"',
+      // Dashes and ellipses.
+      "\xE2\x80\x93" => '-',
+      "\xE2\x80\x94" => '--',
+      "\xE2\x80\xA6" => '...',
+      // Non-breaking space.
+      "\xC2\xA0" => ' ',
+    ];
+
+    $input = strtr($input, $replacements);
+
+    // Strip anything still non-ASCII.
+    return preg_replace('/[^\x20-\x7E]/', '', $input);
   }
 
 }
