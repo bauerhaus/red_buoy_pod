@@ -179,8 +179,8 @@ class PodcastFeedController implements ContainerInjectionInterface {
       $episode_number = htmlspecialchars($node->get('field_podcast_episode_num')->value ?? '');
       $keywords = htmlspecialchars($node->get('field_podcast_keywords')->value ?? '');
       $subtitle = htmlspecialchars($node->get('field_podcast_subtitle')->value ?? '');
-      $desc_html = htmlspecialchars($node->get('field_podcast_descp')->value ?? '');
-      $desc_html = str_replace(']]>', ']]&gt;', $desc_html);
+      $desc_raw_html = $node->get('field_podcast_descp')->value ?? '';
+      $desc_html = str_replace(']]>', ']]&gt;', $desc_raw_html);
       $desc_item_plain = $this->stripHtmlToPlainText($desc_html);
       $season = htmlspecialchars($node->get('field_podcast_season_num')->value ?? '');
       $type = htmlspecialchars($node->get('field_podcast_episode_type')->value ?? '');

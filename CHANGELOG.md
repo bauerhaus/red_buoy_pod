@@ -1,5 +1,29 @@
 # Changelog
-## [0.9.6] – 2025-06-23
+
+## [0.9.9] – 2025-06-25
+### Changed
+Moved input sanitization logic into a centralized static utility class FeedTextSanitizer, consolidating character cleaning across both channel and episode metadata processing.
+
+Improved HTML handling in RSS <content:encoded> fields by avoiding unnecessary escaping (htmlspecialchars), resolving issues with literal <p> tags appearing in Pocket Casts and other players.
+
+Standardized character sanitation to strip smart quotes, em dashes, ellipses, non-breaking spaces, and other non-ASCII characters to improve RSS compatibility across podcast apps.
+
+### Fixed
+Sanitization logic in FeedSettingsForm now correctly handles formatted text fields (text_format) by extracting and replacing only the value, preserving the original format.
+
+RSS episode and channel descriptions now consistently cleaned before being saved to config and content, preventing malformed XML in podcast feeds.
+
+sanitizeAscii() function now properly handles null inputs and warns users only once per request when special characters are stripped.
+
+### Added
+Implemented hook_entity_presave() for podcast_episode nodes to sanitize all relevant text fields (field_podcast_author, field_podcast_descp, field_podcast_duration, field_podcast_keywords, field_podcast_subtitle) at save time, regardless of whether they are submitted via UI or programmatically.
+
+Logger entries to track execution of presave sanitization, aiding debug and validation.
+
+One-time warning message to the Drupal messenger UI when user-entered characters are removed for RSS compatibility.
+
+
+## [0.9.8] – 2025-06-23
 
 ### Fix
 - Replaced description sanitization logic: previous approach removed smart quotes at render time, which caused encoding issues in some feeds.

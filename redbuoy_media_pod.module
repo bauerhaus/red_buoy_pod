@@ -1,7 +1,8 @@
 <?php
 
 use Drupal\Core\Routing\RouteMatchInterface;
-
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\redbuoy_media_pod\FeedTextSanitizer;
 
 
 /**
@@ -50,3 +51,43 @@ function redbuoy_media_pod_help($route_name, RouteMatchInterface $route_match) {
       return $output;
   }
 }
+  /**
+ * Implements hook_entity_presave().
+ */
+function redbuoy_media_pod_entity_presave(\Drupal\Core\Entity\EntityInterface $entity) {
+  if ($entity->getEntityTypeId() === 'node' && $entity->bundle() === 'podcast_episode') {
+
+    $fields_to_clean = [
+      'field_podcast_author',
+      'field_podcast_descp',
+      'field_podcast_duration',
+      'field_podcast_keywords',
+      'field_podcast_subtitle',
+    ];
+
+    foreach ($fields_to_clean as $field) {
+      if (!$entity->hasField($field)) {
+        continue;
+      }
+
+      $value = $entity->get($field)->value ?? null;
+
+      if ($value !== null) {
+        $cleaned = \Drupal\redbuoy_media_pod\FeedTextSanitizer::sanitizeAscii($value);
+        if ($field === 'field_podcast_descp') {
+          $entity->set($field, [
+            'value' => $cleaned,
+            'format' => $entity->get($field)->format,
+          ]);
+        } else {
+          $entity->set($field, $cleaned);
+        }
+      }
+    }
+
+    \Drupal::logger('redbuoy_media_pod')->notice('Entity presave sanitizer ran for node ID ' . $entity->id());
+  }
+}
+
+
+
