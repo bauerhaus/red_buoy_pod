@@ -34,6 +34,7 @@ FEATURES
 - Feed validator–friendly XML output
 - Supports multiple podcast subjects from a single content type
 - Does not require Views (but supports them)
+- Text Sanitization for Podcast Compatibility - see note below
 
 QUICK START
 -----------
@@ -95,6 +96,28 @@ The feed controller uses conditional HTTP headers:
 - `Last-Modified`
 
 This allows clients (and validators) to cache efficiently.
+
+Text Sanitization for Podcast Compatibility
+-------------------------------------------
+This module includes automatic sanitization of user-entered text in both episode content and podcast channel metadata. The purpose is to ensure that all text fields used in RSS feeds (e.g., descriptions, subtitles, keywords) are compatible with the strict XML requirements of podcast platforms.
+
+- What It Does
+   Replaces or removes problematic characters like:
+   Smart quotes (“ ”, ‘ ’)
+   Em dashes (—) and en dashes (–)
+   Ellipses (…)
+   Non-breaking spaces
+   Emoji and other non-ASCII characters
+   Ensures only ASCII-safe characters are used in the RSS feed, preventing validation errors or rendering issues in podcast apps like Spotify, Apple Podcasts, and Pocket Casts.
+
+- How It Works
+   Sanitization is applied automatically whenever an episode is created or edited.
+   Channel-level fields (like the description) are sanitized when the Feed Settings form is submitted.
+   A one-time warning message is shown to the editor if special characters were removed.
+   Sanitization is applied before text is saved to the database, ensuring clean storage and consistent output.
+
+- Why It Matters
+   Podcast RSS feeds are parsed by a wide range of apps, many of which are sensitive to invalid or non-standard characters. Even a single unescaped emoji or typographic quote can invalidate the entire feed or cause display issues. This module ensures reliable feed output without requiring editors to understand XML limitations.
 
 LICENSE
 -------

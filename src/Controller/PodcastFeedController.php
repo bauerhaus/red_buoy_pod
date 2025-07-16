@@ -178,13 +178,18 @@ class PodcastFeedController implements ContainerInjectionInterface {
       $explicit = htmlspecialchars($node->get('field_podcast_explicit')->value ?? '');
       $episode_number = htmlspecialchars($node->get('field_podcast_episode_num')->value ?? '');
       $keywords = htmlspecialchars($node->get('field_podcast_keywords')->value ?? '');
+      $keywords = $this->sanitizeXmlEntities($keywords);
       $subtitle = htmlspecialchars($node->get('field_podcast_subtitle')->value ?? '');
+      $subtitle = $this->sanitizeXmlEntities($subtitle);
       $desc_raw_html = $node->get('field_podcast_descp')->value ?? '';
       $desc_html = str_replace(']]>', ']]&gt;', $desc_raw_html);
+      // Sanitize for XML safety.
+      $desc_html = $this->sanitizeXmlEntities($desc_html);
       $desc_item_plain = $this->stripHtmlToPlainText($desc_html);
       $season = htmlspecialchars($node->get('field_podcast_season_num')->value ?? '');
       $type = htmlspecialchars($node->get('field_podcast_episode_type')->value ?? '');
       $author = htmlspecialchars($node->get('field_podcast_author')->value ?? '');
+      $author = $this->sanitizeXmlEntities($author);
       $transcript_text = trim($node->get('field_podcast_transcript')->value ?? '');
       $transcript_url = $node->toUrl('canonical', ['absolute' => TRUE])->toString();
       if (!empty($transcript_text)) {
@@ -230,22 +235,31 @@ class PodcastFeedController implements ContainerInjectionInterface {
     $config = $this->configFactory->get("redbuoy_media_pod.settings.$feed");
     $settings = $config->getRawData();
     $pod_title = htmlspecialchars($settings['podcast_title'] ?? '');
+    $pod_title = $this->sanitizeXmlEntities($pod_title);
     $pod_keywords = htmlspecialchars($settings['podcast_keywords'] ?? '');
+    $pod_keywords = $this->sanitizeXmlEntities($pod_keywords);
     $desc_raw = $config->get('podcast_description') ?? '';
     $desc_value = is_array($desc_raw) ? ($desc_raw['value'] ?? '') : $desc_raw;
+    $desc_value = $this->sanitizeXmlEntities($desc_value);
     $desc_plain = $this->stripHtmlToPlainText($desc_value);
     $desc_cdata = str_replace(']]>', ']]&gt;', $desc_value);
     $pod_lang = htmlspecialchars($settings['podcast_language'] ?? '');
     $pod_expl = htmlspecialchars($settings['itunes_explicit'] ?? '');
     $pod_auth = htmlspecialchars($settings['itunes_author'] ?? '');
+    $pod_auth = $this->sanitizeXmlEntities($pod_auth);
     $pod_own_name = htmlspecialchars($settings['podcast_owner_name'] ?? '');
+    $pod_own_name = $this->sanitizeXmlEntities($pod_own_name);
     $pod_own_emai = htmlspecialchars($settings['podcast_owner_email'] ?? '');
+    $pod_own_emai = $this->sanitizeXmlEntities($pod_own_emai);
     $pod_category = htmlspecialchars($config->get('podcast_category') ?? '');
+    $pod_category = $this->sanitizeXmlEntities($pod_category);
     $podcast_link = htmlspecialchars($config->get('podcast_link') ?? '');
     $pod_subcategory = htmlspecialchars($config->get('podcast_sub_category') ?? '');
+    $pod_subcategory = $this->sanitizeXmlEntities($pod_subcategory);
     $pod_image_url = htmlspecialchars($config->get('podcast_image_url') ?? '');
     $podcast_type = htmlspecialchars($config->get('itunes_type') ?? 'episodic');
     $podcast_copyright = htmlspecialchars($config->get('podcast_copyright') ?? 'episodic');
+    $podcast_copyright = $this->sanitizeXmlEntities($podcast_copyright);
 
     // Set the channel data into the XML.
     $rss_channel = "";
@@ -278,7 +292,7 @@ class PodcastFeedController implements ContainerInjectionInterface {
       $rss_channel .= "    <itunes:type>{$podcast_type}</itunes:type>\n";
     }
     if (!empty($settings['itunes_update_frequency'])) {
-      $rss_channel .= "    <itunes:updateFrequency>" . htmlspecialchars($settings['itunes_update_frequency']) . "</itunes:updateFrequency>\n";
+      $rss_channel .= "    <podcast:updateFrequency>" . htmlspecialchars($settings['itunes_update_frequency']) . "</podcast:updateFrequency>\n";
     }
     if ($podcast_copyright !== '') {
       $rss_channel .= "    <copyright>{$podcast_copyright}</copyright>";
@@ -361,6 +375,31 @@ XML;
     $response->setPrivate();
     $response->setMaxAge(0);
     return $response;
+  }
+
+  /**
+   * Sanitizes a string for safe inclusion in XML output.
+   *
+   * Replaces common HTML entities like &nbsp; and typographic quotes with
+   * their UTF-8 equivalents or safe characters. Also ensures that stray
+   * ampersands are converted to &amp;, unless they're part of a valid entity.
+   *
+   * @param string $string
+   *   The input string potentially containing unsafe HTML entities.
+   *
+   * @return string
+   *   A sanitized string that is safe for inclusion in an XML document.
+   */
+  private function sanitizeXmlEntities($string) {
+
+    // Replace common HTML entities that are invalid in XML.
+    $search = ['&nbsp;', '&mdash;', '&ndash;', '&lsquo;', '&rsquo;', '&ldquo;', '&rdquo;'];
+    $replace = [' ', '—', '–', "'", "'", '"', '"'];
+
+    // Replace ampersands not part of a valid entity.
+    $string = preg_replace('/&(?!amp;|lt;|gt;|quot;|apos;|#\d+;|#x[0-9a-fA-F]+;)/', '&amp;', $string);
+
+    return str_replace($search, $replace, $string);
   }
 
 }

@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.9.10] - 2025-07-16
+## Added
+Added a function sanitizeXmlEntities($string) to remove unsafe HTML entities that XML does not allow. A &nbsp; entity cause the feed to crash at Apple and Amazon. The function cleans the text fields in case your editor inserts them.
+
+There may be a cleaner way to do this but it works, and the risk is too great. Trying to find one of those characters in you content is crazy making - believe me I know.
+
 ## [0.9.9] – 2025-06-25
 ### Changed
 Moved input sanitization logic into a centralized static utility class FeedTextSanitizer, consolidating character cleaning across both channel and episode metadata processing.
