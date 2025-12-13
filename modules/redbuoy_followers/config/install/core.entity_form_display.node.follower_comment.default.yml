@@ -11,6 +11,8 @@ dependencies:
   module:
     - path
     - text
+_core:
+  default_config_hash: iFoafcRkGSG7vxMccTC6Z752b-dhZBsiEa3wubBC9JI
 id: node.follower_comment.default
 targetEntityType: node
 bundle: follower_comment

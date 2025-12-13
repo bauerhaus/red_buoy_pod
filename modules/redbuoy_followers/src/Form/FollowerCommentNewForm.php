@@ -39,9 +39,29 @@ final class FollowerCommentNewForm extends FormBase {
     }
     $this->episode = $episode;
     $this->feed = $feed;
+    $episode_title = $episode->label();
+    // Try to pull an episode number if a field exists.
 
+    $feed_label = redbuoy_media_pod_feed_label($feed);
     $form['intro'] = [
-      '#markup' => $this->t('<p>Leave a short note for Harmonia. Your comment will appear after moderation.</p>'),
+      '#markup' => $this->t(
+        '<h2> Thank you for your interest in the @feed podcast</h2>
+        <p> Your comment will appear after moderation.</p>
+        <p> <em>We don\'t collect any private data - not your email address, or any other identifiable information. Your intrest in our podcast is important to us - your privacy is more important</em>. But this means we can\'t send you a notice when your comment is approved :-)</p>',
+        ['@feed' => $feed_label]
+      ),
+    ];
+
+
+    $context = $this->t('You are commenting on @feed: “@title”.', [
+        '@feed' => $feed_label,
+        '@title' => $episode_title,
+    ]);
+
+    $form['context'] = [
+      '#type' => 'item',
+      '#title' => $this->t('Episode'),
+      '#markup' => '<strong>' . $this->t('@text', ['@text' => $context]) . '</strong>',
     ];
 
     // Hidden context (we do NOT let users edit these).
@@ -144,4 +164,5 @@ final class FollowerCommentNewForm extends FormBase {
     $this->messenger()->addStatus($this->t('Thank you. Your comment was received and will appear after moderation.'));
     $form_state->setRedirectUrl($episode->toUrl());
   }
+
 }

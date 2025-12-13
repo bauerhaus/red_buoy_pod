@@ -8,6 +8,8 @@ dependencies:
     - node.type.follower_comment
   module:
     - text
+_core:
+  default_config_hash: _Yazdbmga2sSTHQeZxTWfu0pELzZYukoIjtXpekUhqw
 id: node.follower_comment.field_rb_follower_comment
 field_name: field_rb_follower_comment
 entity_type: node

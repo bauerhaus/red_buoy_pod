@@ -7,6 +7,8 @@ dependencies:
     - node.type.follower_comment
   module:
     - options
+_core:
+  default_config_hash: sWtXCBdMlePTgXYjxMjNI77XmvWaD2kjEoiM6vLT0Oc
 id: node.follower_comment.field_podcast_feed
 field_name: field_podcast_feed
 entity_type: node

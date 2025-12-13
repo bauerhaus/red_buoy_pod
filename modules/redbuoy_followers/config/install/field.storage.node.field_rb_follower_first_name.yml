@@ -4,6 +4,8 @@ status: true
 dependencies:
   module:
     - node
+_core:
+  default_config_hash: QjXputcIUnp1I_zT8nukrBFvgYIo4_UuWv_ptT4k9jY
 id: node.field_rb_follower_first_name
 field_name: field_rb_follower_first_name
 entity_type: node

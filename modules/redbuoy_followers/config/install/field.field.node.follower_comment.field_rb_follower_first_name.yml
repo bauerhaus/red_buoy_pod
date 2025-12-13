@@ -5,6 +5,8 @@ dependencies:
   config:
     - field.storage.node.field_rb_follower_first_name
     - node.type.follower_comment
+_core:
+  default_config_hash: nmJ_2AOBpdEknAmq5Xp35IGcr8oVUCv7nHR_2l3KE_Q
 id: node.follower_comment.field_rb_follower_first_name
 field_name: field_rb_follower_first_name
 entity_type: node

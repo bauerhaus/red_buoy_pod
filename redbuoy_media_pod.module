@@ -91,3 +91,28 @@ function redbuoy_media_pod_entity_presave(\Drupal\Core\Entity\EntityInterface $e
 
 
 
+/**
+ * Get a human label for a feed id.
+ *
+ * Falls back to ucfirst(feed id) if no configured label is found.
+ */
+function redbuoy_media_pod_feed_label(string $feed_id): string {
+  $feed_id = trim($feed_id);
+  if ($feed_id === '') {
+    return '';
+  }
+
+  // If you have per-feed config objects, try them first.
+  $cfg = \Drupal::config("redbuoy_media_pod.settings.$feed_id");
+
+  // Use whatever key you actually store the title under.
+  foreach (['title', 'podcast_title', 'name', 'label'] as $key) {
+    $val = $cfg->get($key);
+    if (is_string($val) && trim($val) !== '') {
+      return trim($val);
+    }
+  }
+
+  // Safe fallback.
+  return ucfirst(str_replace('_', ' ', $feed_id));
+}
