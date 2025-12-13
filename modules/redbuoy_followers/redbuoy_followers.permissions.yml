@@ -1,0 +1,7 @@
+create follower_comment content:
+  title: 'Create follower comments'
+  description: 'Submit follower_comment nodes'
+  restrict: false
+moderate follower comments:
+  title: 'Publish/hide follower comments'
+  restrict: true

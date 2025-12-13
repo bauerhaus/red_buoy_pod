@@ -1,0 +1,46 @@
+# Schema for Red Buoy Pod.
+
+redbuoy_media_pod.settings:
+  type: config_object
+  label: 'Red Buoy Pod settings'
+  mapping:
+    feeds:
+      type: sequence
+      label: 'Feed list'
+      sequence:
+        type: string
+    # Ignore these complex definition arrays entirely.
+    feed_protected:
+      type: ignore
+      label: 'Protected field definitions'
+    feed_fields:
+      type: ignore
+      label: 'Editable field definitions'
+
+# Per-feed settings objects (keep these typed: they’re stable).
+redbuoy_media_pod.settings.*:
+  type: config_object
+  label: 'Red Buoy Pod feed settings'
+  mapping:
+    podcast_title:            { type: string,      label: 'Podcast Title' }
+    podcast_keywords:         { type: string,      label: 'iTunes Keywords' }
+    podcast_language:         { type: string,      label: 'Language' }
+    itunes_explicit:          { type: string,      label: 'Explicit' }
+    itunes_category:          { type: string,      label: 'Category' }
+    podcast_image_url:        { type: string,      label: 'Image URL' }
+    itunes_author:            { type: string,      label: 'Author' }
+    podcast_description:
+      type: mapping
+      label: 'Description'
+      mapping:
+        value:                { type: text,        label: 'Value' }
+        format:               { type: string,      label: 'Text format' }
+    podcast_owner:            { type: string,      label: 'Owner' }
+    podcast_copyright:        { type: string,      label: 'Copyright' }
+    itunes_type:              { type: string,      label: 'iTunes Type' }
+    podcast_link:             { type: string,      label: 'Website Link' }
+    itunes_update_frequency:  { type: string,      label: 'Update frequency' }
+    podcast_category: { type: string }
+    podcast_sub_category: { type: string }
+    podcast_owner_name: { type: string }
+    podcast_owner_email: { type: string }

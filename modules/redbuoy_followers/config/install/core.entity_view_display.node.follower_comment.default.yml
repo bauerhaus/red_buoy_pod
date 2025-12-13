@@ -1,0 +1,55 @@
+uuid: 01261416-3cac-4a53-811f-bff8287e565d
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.field.node.follower_comment.field_podcast_feed
+    - field.field.node.follower_comment.field_rb_follower_comment
+    - field.field.node.follower_comment.field_rb_follower_episode
+    - field.field.node.follower_comment.field_rb_follower_first_name
+    - node.type.follower_comment
+  module:
+    - text
+    - user
+id: node.follower_comment.default
+targetEntityType: node
+bundle: follower_comment
+mode: default
+content:
+  field_podcast_feed:
+    type: string
+    label: above
+    settings:
+      link_to_entity: false
+    third_party_settings: {  }
+    weight: 0
+    region: content
+  field_rb_follower_comment:
+    type: text_default
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 104
+    region: content
+  field_rb_follower_episode:
+    type: entity_reference_label
+    label: above
+    settings:
+      link: true
+    third_party_settings: {  }
+    weight: 103
+    region: content
+  field_rb_follower_first_name:
+    type: string
+    label: above
+    settings:
+      link_to_entity: false
+    third_party_settings: {  }
+    weight: 101
+    region: content
+  links:
+    settings: {  }
+    third_party_settings: {  }
+    weight: 100
+    region: content
+hidden: {  }

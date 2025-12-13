@@ -140,23 +140,30 @@ class FeedSettingsForm extends ConfigFormBase {
     foreach ($this->getFieldDefinitions() as $def) {
 
       // Handle group fields.
-      if ($def['type'] === 'group' && !empty($def['children'])) {
-        foreach ($def['children'] as $child) {
-          $name = $child['name'];
-          $form[$name] = [
-            '#type' => 'textfield',
-            '#title' => ucwords(str_replace('_', ' ', $name)),
-            '#default_value' => $config->get($name) ?? '',
-          ];
+      if ($def['type'] === 'group') {
+        // Children are optional; iterate only if it's an array.
+        $children = $def['children'] ?? [];
+        if (is_array($children)) {
+          foreach ($children as $child) {
+            $name = $child['name'];
+            $form[$name] = [
+              '#type' => 'textfield',
+              '#title' => ucwords(str_replace('_', ' ', $name)),
+              '#default_value' => $config->get($name) ?? '',
+            ];
+          }
         }
 
-        // Handle the group own attribute if it's mapped to a separate setting.
-        foreach ($def['attribute'] as $attr => $source) {
-          $form[$source] = [
-            '#type' => 'textfield',
-            '#title' => ucwords(str_replace('_', ' ', $source)),
-            '#default_value' => $config->get($source) ?? '',
-          ];
+        // Group-level attributes are optional; iterate only if it's an array.
+        $attributes = $def['attribute'] ?? [];
+        if (is_array($attributes)) {
+          foreach ($attributes as $attr => $source) {
+            $form[$source] = [
+              '#type' => 'textfield',
+              '#title' => ucwords(str_replace('_', ' ', $source)),
+              '#default_value' => $config->get($source) ?? '',
+            ];
+          }
         }
 
         continue;

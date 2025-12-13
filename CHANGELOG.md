@@ -1,5 +1,8 @@
 # Changelog
 
+## [0.9.11] - 2025-08-14
+added a schema file for the redbuoy_media_pod.settings to match the setting.JSON file config
+
 ## [0.9.10] - 2025-07-16
 ## Added
 Added a function sanitizeXmlEntities($string) to remove unsafe HTML entities that XML does not allow. A &nbsp; entity cause the feed to crash at Apple and Amazon. The function cleans the text fields in case your editor inserts them.

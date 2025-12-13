@@ -1,0 +1,11 @@
+uuid: 6aa60fe3-2026-44da-83de-01f074ed561b
+langcode: en
+status: true
+dependencies: {  }
+name: 'Follower comment'
+type: follower_comment
+description: 'User-submitted comments linked to podcast episodes.'
+help: null
+new_revision: false
+preview_mode: 1
+display_submitted: true

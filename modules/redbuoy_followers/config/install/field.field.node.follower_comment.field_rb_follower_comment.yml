@@ -1,0 +1,24 @@
+uuid: 4c8c8159-8696-4d46-837a-2dacf28ae779
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_rb_follower_comment
+    - filter.format.plain_text
+    - node.type.follower_comment
+  module:
+    - text
+id: node.follower_comment.field_rb_follower_comment
+field_name: field_rb_follower_comment
+entity_type: node
+bundle: follower_comment
+label: Comment
+description: ''
+required: true
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  allowed_formats:
+    - plain_text
+field_type: text_long

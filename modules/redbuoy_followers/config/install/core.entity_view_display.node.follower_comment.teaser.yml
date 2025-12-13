@@ -1,0 +1,28 @@
+uuid: 53fe5eca-ed37-437f-8175-f4892def56eb
+langcode: en
+status: true
+dependencies:
+  config:
+    - core.entity_view_mode.node.teaser
+    - field.field.node.follower_comment.field_podcast_feed
+    - field.field.node.follower_comment.field_rb_follower_comment
+    - field.field.node.follower_comment.field_rb_follower_episode
+    - field.field.node.follower_comment.field_rb_follower_first_name
+    - node.type.follower_comment
+  module:
+    - user
+id: node.follower_comment.teaser
+targetEntityType: node
+bundle: follower_comment
+mode: teaser
+content:
+  links:
+    settings: {  }
+    third_party_settings: {  }
+    weight: 100
+    region: content
+hidden:
+  field_podcast_feed: true
+  field_rb_follower_comment: true
+  field_rb_follower_episode: true
+  field_rb_follower_first_name: true

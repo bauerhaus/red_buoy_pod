@@ -10,5 +10,8 @@
   ],
   "license": "GPL-2.0-or-later",
   "minimum-stability": "stable",
-  "require": {}
+  "require": {},
+  "extra": {
+    "installer-name": "redbuoy_media_pod"
+  }
 }

@@ -1,0 +1,21 @@
+uuid: 994ce8e6-083d-470a-87da-806a676abe8f
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_podcast_feed
+    - node.type.follower_comment
+  module:
+    - options
+id: node.follower_comment.field_podcast_feed
+field_name: field_podcast_feed
+entity_type: node
+bundle: follower_comment
+label: 'Podcast Episode Feed'
+description: 'Select the podcast feed this episode belongs to. This is how podcast content streams are managed'
+required: true
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: list_string

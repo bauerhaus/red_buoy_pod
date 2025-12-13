@@ -1,0 +1,19 @@
+uuid: 6b7c6b6c-dbbc-4a37-b2a3-29d0e3e11b1d
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_rb_follower_first_name
+    - node.type.follower_comment
+id: node.follower_comment.field_rb_follower_first_name
+field_name: field_rb_follower_first_name
+entity_type: node
+bundle: follower_comment
+label: 'First Name'
+description: 'Your first name or handle '
+required: true
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string

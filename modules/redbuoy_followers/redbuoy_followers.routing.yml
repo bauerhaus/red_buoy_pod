@@ -1,0 +1,10 @@
+
+redbuoy_followers.new:
+  path: '/follower_comment/new'
+  defaults:
+    _title: 'Leave a comment'
+    _controller: '\Drupal\redbuoy_followers\Controller\FollowerCommentController::new'
+  requirements:
+    _permission: 'create follower_comment content'
+  options:
+    no_cache: TRUE

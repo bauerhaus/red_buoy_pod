@@ -1,0 +1,8 @@
+name: Red Buoy Followers
+type: module
+description: Episode-linked follower comments (as nodes) + community comments page.
+core_version_requirement: ^11
+package: Red Buoy
+dependencies:
+  - drupal:node
+  - redbuoy_media_pod

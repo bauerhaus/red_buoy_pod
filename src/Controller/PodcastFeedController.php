@@ -2,12 +2,14 @@
 
 namespace Drupal\redbuoy_media_pod\Controller;
 
+use Drupal\Component\Utility\Html;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\File\FileUrlGeneratorInterface;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
+use Drupal\Core\Url;
 use Drupal\file\FileInterface;
 use Drupal\node\Entity\Node;
 use Psr\Log\LoggerInterface;
@@ -196,6 +198,39 @@ class PodcastFeedController implements ContainerInjectionInterface {
         $desc_item_plain .= "\n\nTranscript available at: $transcript_url";
         $desc_html .= '<p><a href="' . $transcript_url . '">Read the transcript</a></p>';
       }
+      /*
+      // NEW: comment CTA only if the followers submodule is enabled.
+      if (\Drupal::service('module_handler')->moduleExists('redbuoy_followers')) {
+        // Absolute URL so podcast apps open it correctly.
+        // Absolute URL so podcast apps open it correctly.
+        $nid = (int) $node->id();
+        $feed_id = (string) $node->get('field_podcast_feed')->value;
+
+        $comment_url = Url::fromRoute(
+          'redbuoy_followers.new',
+          [],
+          [
+            'absolute' => TRUE,
+            'query' => [
+              'feed' => $feed_id,
+              'node' => $nid,
+            ],
+          ]
+        )->toString();
+
+
+        // Plain-text tail (for <description> and itunes:summary if you mirror it).
+        $desc_item_plain .= "\n\nLeave a comment: $comment_url";
+
+        // HTML tail (for <content:encoded>).
+        $desc_html .= '<p>💬 <a href="' . Html::escape($comment_url) . '">Leave a comment on this episode</a></p>';
+
+        // If you maintain a separate $itunes_summary string, append there too.
+        if (isset($itunes_summary)) {
+          $itunes_summary = rtrim($itunes_summary) . "\n\nLeave a comment: $comment_url";
+        }
+      }
+*/
       // Track the modified times for the HTML header.
       $changed = $node->getChangedTime();
       if ($changed > $last_modified_ts) {
