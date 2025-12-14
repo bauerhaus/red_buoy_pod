@@ -7,22 +7,23 @@ dependencies:
     - field.field.node.follower_comment.field_rb_follower_comment
     - field.field.node.follower_comment.field_rb_follower_episode
     - field.field.node.follower_comment.field_rb_follower_first_name
+    - field.field.node.follower_comment.field_response
     - node.type.follower_comment
   module:
+    - options
     - text
     - user
 _core:
-  default_config_hash: 0tUYgpI6wDkGVobWlfACnneVFAVtnpvj89FhDNKHQt4
+  default_config_hash: Yqdr925GKq4l4fW6ijQGWbR_mBg7czYRGFS5ZfR8mq4
 id: node.follower_comment.default
 targetEntityType: node
 bundle: follower_comment
 mode: default
 content:
   field_podcast_feed:
-    type: string
+    type: list_key
     label: above
-    settings:
-      link_to_entity: false
+    settings: {  }
     third_party_settings: {  }
     weight: 0
     region: content
@@ -31,15 +32,7 @@ content:
     label: above
     settings: {  }
     third_party_settings: {  }
-    weight: 104
-    region: content
-  field_rb_follower_episode:
-    type: entity_reference_label
-    label: above
-    settings:
-      link: true
-    third_party_settings: {  }
-    weight: 103
+    weight: 3
     region: content
   field_rb_follower_first_name:
     type: string
@@ -47,11 +40,19 @@ content:
     settings:
       link_to_entity: false
     third_party_settings: {  }
-    weight: 101
+    weight: 2
+    region: content
+  field_response:
+    type: basic_string
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    weight: 4
     region: content
   links:
     settings: {  }
     third_party_settings: {  }
-    weight: 100
+    weight: 1
     region: content
-hidden: {  }
+hidden:
+  field_rb_follower_episode: true

@@ -2,5 +2,5 @@ redbuoy_media_pod.feed_list:
   title: 'Podcast Feeds'
   description: 'Manage podcast feeds and settings.'
   route_name: redbuoy_media_pod.feed_list
-  parent: system.admin_config_media
+  parent: system.admin_config_services
   weight: 10

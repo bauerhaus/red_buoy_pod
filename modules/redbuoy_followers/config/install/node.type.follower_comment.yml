@@ -3,7 +3,7 @@ langcode: en
 status: true
 dependencies: {  }
 _core:
-  default_config_hash: VYSWcASFQDKTXhPkNPxjPtiKKtjEH3zfCkZ85j7br8s
+  default_config_hash: yfjsc8m77gMzdIZRgLlmc1IGLuAvOwizj9IgE88vfe0
 name: 'Follower comment'
 type: follower_comment
 description: 'User-submitted comments linked to podcast episodes.'

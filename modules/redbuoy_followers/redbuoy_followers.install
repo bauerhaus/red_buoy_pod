@@ -1,0 +1,14 @@
+<?php
+
+/**
+ * Set followers_comments_enabled = FALSE for all feeds on install or update.
+ */
+function redbuoy_followers_update_8001() {
+  $feeds = \Drupal::config('redbuoy_media_pod.settings')->get('feeds') ?? [];
+  foreach ($feeds as $feed_id) {
+    $config = \Drupal::configFactory()->getEditable("redbuoy_media_pod.settings.$feed_id");
+    if ($config->get('followers_comments_enabled') === NULL) {
+     $config->set('followers_comments_enabled', FALSE)->save();
+    }
+  }
+}

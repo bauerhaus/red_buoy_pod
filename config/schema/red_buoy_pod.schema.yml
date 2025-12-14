@@ -22,6 +22,12 @@ redbuoy_media_pod.settings.*:
   type: config_object
   label: 'Red Buoy Pod feed settings'
   mapping:
+    label:
+      type: label
+      label: 'Feed label'
+    followers_comments_enabled:
+      type: boolean
+      label: 'Enable follower comments'
     podcast_title:            { type: string,      label: 'Podcast Title' }
     podcast_keywords:         { type: string,      label: 'iTunes Keywords' }
     podcast_language:         { type: string,      label: 'Language' }

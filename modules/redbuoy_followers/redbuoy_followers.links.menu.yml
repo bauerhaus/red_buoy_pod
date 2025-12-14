@@ -1,0 +1,6 @@
+redbuoy_followers.settings:
+  title: 'Podcast Comment Settings'
+  description: 'Enable or disable follower comments for each podcast feed.'
+  parent: system.admin_config_services
+  route_name: redbuoy_followers.settings
+  weight: 11

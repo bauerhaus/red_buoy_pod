@@ -5,7 +5,7 @@ dependencies:
   module:
     - node
 _core:
-  default_config_hash: 5LmEwQVH3II90YjziMJjphh6LryoFg76mCGRklounGA
+  default_config_hash: hnAGZdsGODrCuXJx_lc7JtooeVgyqm8X5Sb7hfiWsDM
 id: node.field_rb_follower_episode
 field_name: field_rb_follower_episode
 entity_type: node

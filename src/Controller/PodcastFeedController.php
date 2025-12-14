@@ -200,9 +200,13 @@ class PodcastFeedController implements ContainerInjectionInterface {
       }
 
       // NEW: comment CTA only if the followers submodule is enabled.
-      if (\Drupal::service('module_handler')->moduleExists('redbuoy_followers')) {
+      $feed_id = (string) $node->get('field_podcast_feed')->value;
+      if (
+        \Drupal::service('module_handler')->moduleExists('redbuoy_followers')
+        && (\Drupal::config("redbuoy_media_pod.settings.$feed_id")->get('followers_comments_enabled') === TRUE)
+      ) {
         $nid = (int) $node->id();
-        $feed_id = (string) $node->get('field_podcast_feed')->value;
+
 
         $comments_url = Url::fromUri(
           'internal:/podcast-comments',

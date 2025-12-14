@@ -7,7 +7,7 @@ dependencies:
     - node.type.follower_comment
     - node.type.podcast_episode
 _core:
-  default_config_hash: VMi4z6_oyv_lnjA8V90jTi3hbP66ahVGxOq0bVTZqfY
+  default_config_hash: Mgh7WPleCpk4Cy2Tsw5IXmoHqi6yQQYmLrDuqwk19f0
 id: node.follower_comment.field_rb_follower_episode
 field_name: field_rb_follower_episode
 entity_type: node

@@ -3,6 +3,82 @@
 use Drupal\Core\Url;
 use Drupal\Component\Utility\Html;
 use Drupal\node\Entity\Node;
+use Drupal\node\NodeInterface;
+
+/**
+ * Implements hook_entity_insert().
+ */
+function redbuoy_followers_entity_insert(\Drupal\Core\Entity\EntityInterface $entity) {
+  if ($entity->getEntityTypeId() !== 'node' || $entity->bundle() !== 'follower_comment') {
+    return;
+  }
+  /** @var \Drupal\node\NodeInterface $entity */
+
+  // Recipient: site-wide email.
+  $to = (string) \Drupal::config('system.site')->get('mail');
+  if (empty($to)) {
+    return;
+  }
+
+  // Get related episode.
+  $episode_title = '';
+  $episode_url = '';
+  if ($entity->hasField('field_rb_follower_episode') && !$entity->get('field_rb_follower_episode')->isEmpty()) {
+    /** @var \Drupal\node\NodeInterface|null $episode */
+    $episode = $entity->get('field_rb_follower_episode')->entity;
+    if ($episode instanceof NodeInterface) {
+      $episode_title = $episode->label();
+      $episode_url = $episode->toUrl('canonical', ['absolute' => TRUE])->toString();
+    }
+  }
+
+  $handle = $entity->hasField('field_rb_follower_first_name') ? (string) $entity->get('field_rb_follower_first_name')->value : '';
+  $comment = $entity->hasField('field_rb_follower_comment') ? (string) $entity->get('field_rb_follower_comment')->value : '';
+  $comment = trim($comment);
+
+  $moderate_url = $entity->toUrl('edit-form', ['absolute' => TRUE])->toString();
+
+  $params = [
+    'subject' => "New follower comment (unpublished)",
+    'handle' => $handle,
+    'comment' => $comment,
+    'episode_title' => $episode_title,
+    'episode_url' => $episode_url,
+    'moderate_url' => $moderate_url,
+  ];
+
+  $langcode = \Drupal::languageManager()->getDefaultLanguage()->getId();
+  \Drupal::service('plugin.manager.mail')->mail('redbuoy_followers', 'new_comment', $to, $langcode, $params);
+}
+/**
+ * Implements hook_mail().
+ */
+function redbuoy_followers_mail($key, &$message, $params) {
+  if ($key !== 'new_comment') {
+    return;
+  }
+
+  $message['subject'] = $params['subject'] ?? 'New follower comment';
+
+  $lines = [];
+  if (!empty($params['episode_title'])) {
+    $lines[] = "Episode: " . $params['episode_title'];
+  }
+  if (!empty($params['episode_url'])) {
+    $lines[] = "Episode link: " . $params['episode_url'];
+  }
+  if (!empty($params['handle'])) {
+    $lines[] = "From: " . $params['handle'];
+  }
+  $lines[] = "";
+  $lines[] = "Comment:";
+  $lines[] = $params['comment'] ?? '';
+  $lines[] = "";
+  $lines[] = "Moderate: " . ($params['moderate_url'] ?? '');
+
+  $message['body'][] = implode("\n", $lines);
+}
+
 
 /**
  * Implements hook_preprocess_page().
@@ -76,4 +152,30 @@ function redbuoy_followers_preprocess_page(array &$variables) {
 
   // Put it above the main content.
   $variables['page']['content']['rb_followers_cta'] = $cta;
+}
+
+/**
+ * Implements hook_form_alter().
+ */
+function redbuoy_followers_form_alter(array &$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
+  // Only protect our custom follower comment form.
+  if ($form_id !== 'redbuoy_followers_new_comment_form') {
+    return;
+  }
+
+  // Only if Honeypot module is installed.
+  if (!\Drupal::service('module_handler')->moduleExists('honeypot')) {
+    return;
+  }
+
+  if (
+    $form_id === 'redbuoy_followers_new_comment_form'
+    && \Drupal::service('module_handler')->moduleExists('honeypot')
+  ) {
+
+    \Drupal::service('honeypot')->addFormProtection($form, $form_state, [
+      'honeypot' => TRUE,
+      'time_limit' => 5,
+    ]);
+  }
 }

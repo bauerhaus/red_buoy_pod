@@ -6,7 +6,7 @@ dependencies:
     - node
     - text
 _core:
-  default_config_hash: hGtC14_zW38VplHKYvTjLhGk-e0AlSHD152oehzjN3k
+  default_config_hash: jN1AI32YQ75pnmX2H9FpcQFI2hBh3InRI9SIWpB-5gg
 id: node.field_rb_follower_comment
 field_name: field_rb_follower_comment
 entity_type: node

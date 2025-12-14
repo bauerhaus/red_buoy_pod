@@ -8,3 +8,10 @@ redbuoy_followers.new:
     _permission: 'create follower_comment content'
   options:
     no_cache: TRUE
+redbuoy_followers.settings:
+  path: '/admin/config/redbuoy/followers'
+  defaults:
+    _form: '\Drupal\redbuoy_followers\Form\FollowersSettingsForm'
+    _title: 'Followers Comment Settings'
+  requirements:
+    _permission: 'administer site configuration'

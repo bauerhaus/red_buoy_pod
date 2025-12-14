@@ -1,5 +1,8 @@
 # Changelog
 
+## [0.9.12] - 2025-12-13
+Added the redbuoy_followers module to enable users to view comments on the feeds installing the module will enable comments, the episode description has a link to the comment page for the podcast, from there visitors can add their own comments
+
 ## [0.9.11] - 2025-08-14
 added a schema file for the redbuoy_media_pod.settings to match the setting.JSON file config
 

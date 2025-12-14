@@ -9,7 +9,7 @@ dependencies:
   module:
     - text
 _core:
-  default_config_hash: _Yazdbmga2sSTHQeZxTWfu0pELzZYukoIjtXpekUhqw
+  default_config_hash: uV1ur7-vRwYpZ2_d8kPksFEwlmQq45q1jfit_vB77H0
 id: node.follower_comment.field_rb_follower_comment
 field_name: field_rb_follower_comment
 entity_type: node

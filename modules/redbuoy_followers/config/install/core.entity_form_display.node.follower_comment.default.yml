@@ -7,12 +7,13 @@ dependencies:
     - field.field.node.follower_comment.field_rb_follower_comment
     - field.field.node.follower_comment.field_rb_follower_episode
     - field.field.node.follower_comment.field_rb_follower_first_name
+    - field.field.node.follower_comment.field_response
     - node.type.follower_comment
   module:
     - path
     - text
 _core:
-  default_config_hash: iFoafcRkGSG7vxMccTC6Z752b-dhZBsiEa3wubBC9JI
+  default_config_hash: zztFjd2CwgTr9CbIWnrWnKCu-_8kJPABNbg265AOwnc
 id: node.follower_comment.default
 targetEntityType: node
 bundle: follower_comment
@@ -56,6 +57,14 @@ content:
     region: content
     settings:
       size: 60
+      placeholder: ''
+    third_party_settings: {  }
+  field_response:
+    type: string_textarea
+    weight: 125
+    region: content
+    settings:
+      rows: 5
       placeholder: ''
     third_party_settings: {  }
   path:

@@ -8,11 +8,12 @@ dependencies:
     - field.field.node.follower_comment.field_rb_follower_comment
     - field.field.node.follower_comment.field_rb_follower_episode
     - field.field.node.follower_comment.field_rb_follower_first_name
+    - field.field.node.follower_comment.field_response
     - node.type.follower_comment
   module:
     - user
 _core:
-  default_config_hash: WlbzFDRyjA3gzXUUtXDlhkBWQEE9ki5L979SkId4RrQ
+  default_config_hash: BWD2pTsCT7sMK8p0Ux5kQ-gS1sclp9YK-sBq-LheRNI
 id: node.follower_comment.teaser
 targetEntityType: node
 bundle: follower_comment
@@ -28,3 +29,4 @@ hidden:
   field_rb_follower_comment: true
   field_rb_follower_episode: true
   field_rb_follower_first_name: true
+  field_response: true
