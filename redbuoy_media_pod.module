@@ -11,11 +11,33 @@ use Drupal\redbuoy_media_pod\FeedTextSanitizer;
 function redbuoy_media_pod_allowed_feed_values() {
   $feeds = \Drupal::config('redbuoy_media_pod.settings')->get('feeds') ?? [];
   $output = [];
-  foreach ($feeds as $feed) {
-    $output[$feed] = ucfirst($feed);
+
+  foreach ($feeds as $feed_id) {
+    $label = NULL;
+
+    // Try per-feed config: redbuoy_media_pod.settings.<feed_id>
+    $feed_config = \Drupal::config("redbuoy_media_pod.settings.$feed_id");
+
+    // Try a few common keys; keep first non-empty.
+    foreach (['title', 'podcast_title', 'name', 'label'] as $key) {
+      $value = $feed_config->get($key);
+      if (is_string($value) && trim($value) !== '') {
+        $label = trim($value);
+        break;
+      }
+    }
+
+    // Fallback: make something readable from the machine id.
+    if (!$label) {
+      $label = ucfirst(str_replace('_', ' ', (string) $feed_id));
+    }
+
+    $output[$feed_id] = $label;
   }
+
   return $output;
 }
+
 
 /**
  * Implements hook_help().

@@ -201,36 +201,30 @@ class PodcastFeedController implements ContainerInjectionInterface {
 
       // NEW: comment CTA only if the followers submodule is enabled.
       if (\Drupal::service('module_handler')->moduleExists('redbuoy_followers')) {
-        // Absolute URL so podcast apps open it correctly.
-        // Absolute URL so podcast apps open it correctly.
         $nid = (int) $node->id();
         $feed_id = (string) $node->get('field_podcast_feed')->value;
 
-        $comment_url = Url::fromRoute(
-          'redbuoy_followers.new',
-          [],
+        $comments_url = Url::fromUri(
+          'internal:/podcast-comments',
           [
             'absolute' => TRUE,
             'query' => [
-              'feed' => $feed_id,
-              'node' => $nid,
+              'field_podcast_feed_value' => $feed_id,
+              'from_node' => $nid,
             ],
           ]
         )->toString();
 
+        // Plain text tail.
+        $desc_item_plain .= "\n\nView comments on this podcast: $comments_url";
 
-        // Plain-text tail (for <description> and itunes:summary if you mirror it).
-        $desc_item_plain .= "\n\nLeave a comment: $comment_url";
+        // HTML tail.
+        $desc_html .= '<p>💬 <a href="' . $comments_url . '">View comments on this podcast</a></p>';
 
-        // HTML tail (for <content:encoded>).
-        $desc_html .= '<p>💬 <a href="' . $comment_url . '">Leave a comment on this episode</a></p>';
-
-        // If you maintain a separate $itunes_summary string, append there too.
         if (isset($itunes_summary)) {
-          $itunes_summary = rtrim($itunes_summary) . "\n\nLeave a comment: $comment_url";
+          $itunes_summary = rtrim($itunes_summary) . "\n\nView comments on this podcast: $comments_url";
         }
       }
-
       // Track the modified times for the HTML header.
       $changed = $node->getChangedTime();
       if ($changed > $last_modified_ts) {
