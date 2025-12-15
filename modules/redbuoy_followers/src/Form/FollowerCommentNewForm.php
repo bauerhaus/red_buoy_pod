@@ -17,7 +17,18 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  */
 final class FollowerCommentNewForm extends FormBase {
 
+  /**
+   * The episode node the form operates on.
+   *
+   * @var \Drupal\node\NodeInterface|null
+   */
   private ?NodeInterface $episode = NULL;
+
+  /**
+   * Current feed identifier.
+   *
+   * @var string
+   */
   private string $feed = '';
 
   /**
@@ -30,12 +41,16 @@ final class FollowerCommentNewForm extends FormBase {
   /**
    * Build form.
    *
-   * @param \Drupal\node\NodeInterface $episode
-   *   The podcast episode node.
+   * @param array $form
+   *   The form array.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   Current form state.
+   * @param \Drupal\node\NodeInterface|null $episode
+   *   The podcast episode node (if available).
    * @param string $feed
    *   The feed id (must match episode).
    */
-  public function buildForm(array $form, FormStateInterface $form_state, NodeInterface $episode = NULL, string $feed = ''): array {
+  public function buildForm(array $form, FormStateInterface $form_state, ?NodeInterface $episode = NULL, string $feed = ''): array {
     if (!$episode) {
       throw new NotFoundHttpException();
     }
@@ -44,7 +59,6 @@ final class FollowerCommentNewForm extends FormBase {
     $episode_title = $episode->label();
     $episode_link = Link::fromTextAndUrl($episode_title, $episode->toUrl())->toString();
     // Try to pull an episode number if a field exists.
-
     $feed_label = redbuoy_media_pod_feed_label($feed);
     $form['intro'] = [
       '#markup' => $this->t(

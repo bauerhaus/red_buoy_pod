@@ -73,7 +73,6 @@ final class FollowerCommentController extends ControllerBase {
       $episode_feed
     );
 
-
     return [
       'form' => $form,
     ];

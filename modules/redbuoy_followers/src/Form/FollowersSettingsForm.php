@@ -5,6 +5,9 @@ namespace Drupal\redbuoy_followers\Form;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 
+/**
+ * Admin form to toggle follower comment settings per podcast feed.
+ */
 class FollowersSettingsForm extends ConfigFormBase {
 
   /**
@@ -63,4 +66,5 @@ class FollowersSettingsForm extends ConfigFormBase {
     parent::submitForm($form, $form_state);
     $this->messenger()->addMessage($this->t('Feed comment settings saved.'));
   }
+
 }

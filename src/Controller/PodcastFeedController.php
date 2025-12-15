@@ -207,7 +207,6 @@ class PodcastFeedController implements ContainerInjectionInterface {
       ) {
         $nid = (int) $node->id();
 
-
         $comments_url = Url::fromUri(
           'internal:/podcast-comments',
           [
