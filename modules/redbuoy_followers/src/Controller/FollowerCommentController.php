@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace Drupal\redbuoy_followers\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
-use Drupal\Core\Link;
-use Drupal\Core\Url;
+
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -74,18 +73,10 @@ final class FollowerCommentController extends ControllerBase {
       $episode_feed
     );
 
-    $back = Link::fromTextAndUrl(
-      $this->t('Back to episode'),
-      Url::fromUri('internal:' . $episode->toUrl()->toString())
-    )->toRenderable();
 
     return [
-      'back' => [
-        '#type' => 'container',
-        'link' => $back,
-        '#attributes' => ['class' => ['rb-followers-backlink']],
-      ],
       'form' => $form,
     ];
   }
+
 }

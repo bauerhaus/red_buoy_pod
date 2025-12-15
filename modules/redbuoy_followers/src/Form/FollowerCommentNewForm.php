@@ -6,6 +6,8 @@ namespace Drupal\redbuoy_followers\Form;
 
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Link;
+use Drupal\Core\Render\Markup;
 use Drupal\node\Entity\Node;
 use Drupal\node\NodeInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -40,6 +42,7 @@ final class FollowerCommentNewForm extends FormBase {
     $this->episode = $episode;
     $this->feed = $feed;
     $episode_title = $episode->label();
+    $episode_link = Link::fromTextAndUrl($episode_title, $episode->toUrl())->toString();
     // Try to pull an episode number if a field exists.
 
     $feed_label = redbuoy_media_pod_feed_label($feed);
@@ -52,16 +55,10 @@ final class FollowerCommentNewForm extends FormBase {
       ),
     ];
 
-
-    $context = $this->t('You are commenting on @feed: “@title”.', [
-        '@feed' => $feed_label,
-        '@title' => $episode_title,
-    ]);
-
     $form['context'] = [
       '#type' => 'item',
       '#title' => $this->t('Episode'),
-      '#markup' => '<strong>' . $this->t('@text', ['@text' => $context]) . '</strong>',
+      '#markup' => Markup::create('<strong>' . $this->t('You are commenting on @feed:', ['@feed' => $feed_label]) . ' ' . $episode_link . '</strong>'),
     ];
 
     // Hidden context (we do NOT let users edit these).
