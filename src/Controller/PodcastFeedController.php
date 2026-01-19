@@ -402,7 +402,9 @@ XML;
     }
 
     $response = new Response($rss);
-    $response->headers->set('Content-Type', 'application/rss+xml; charset=UTF-8');
+    // Use application/xml instead of application/rss+xml to bypass Drupal Core's
+    // RssResponseRelativeUrlFilter which strips CDATA and double-escapes content.
+    $response->headers->set('Content-Type', 'application/xml; charset=UTF-8');
     $response->headers->set('ETag', $etag);
     $response->headers->set('Last-Modified', $last_modified_http);
     $response->setPrivate();
