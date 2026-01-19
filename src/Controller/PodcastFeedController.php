@@ -249,7 +249,7 @@ class PodcastFeedController implements ContainerInjectionInterface {
       $rss_items .= "      <itunes:keywords>$keywords</itunes:keywords>\n";
       $rss_items .= "      <itunes:subtitle>$subtitle</itunes:subtitle>\n";
       $rss_items .= "      <itunes:summary><![CDATA[{$desc_item_plain}]]></itunes:summary>\n";
-      $rss_items .= "      <description>{$desc_item_plain}</description>\n";
+      $rss_items .= "      <description>" . htmlspecialchars($desc_item_plain, ENT_XML1, 'UTF-8') . "</description>\n";
       $rss_items .= "      <content:encoded><![CDATA[{$desc_html}]]></content:encoded>\n";
       $rss_items .= "      <itunes:season>$season</itunes:season>\n";
       $rss_items .= "      <itunes:episodeType>$type</itunes:episodeType>\n";
