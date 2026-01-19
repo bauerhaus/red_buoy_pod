@@ -219,13 +219,13 @@ class PodcastFeedController implements ContainerInjectionInterface {
         )->toString();
 
         // Plain text tail.
-        $desc_item_plain .= "\n\nView comments on this podcast: $comments_url";
+        $desc_item_plain .= "\n\nView comments on this podcast: " . htmlspecialchars($comments_url, ENT_XML1, 'UTF-8');
 
         // HTML tail.
-        $desc_html .= '<p>💬 <a href="' . $comments_url . '">View comments on this podcast</a></p>';
+        $desc_html .= '<p> <a href="' . htmlspecialchars($comments_url, ENT_QUOTES, 'UTF-8') . '">View comments on this podcast</a></p>';
 
         if (isset($itunes_summary)) {
-          $itunes_summary = rtrim($itunes_summary) . "\n\nView comments on this podcast: $comments_url";
+          $itunes_summary = rtrim($itunes_summary) . "\n\nView comments on this podcast: " . htmlspecialchars($comments_url, ENT_XML1, 'UTF-8');
         }
       }
       // Track the modified times for the HTML header.
@@ -248,13 +248,14 @@ class PodcastFeedController implements ContainerInjectionInterface {
       $rss_items .= "      <itunes:keywords>$keywords</itunes:keywords>\n";
       $rss_items .= "      <itunes:subtitle>$subtitle</itunes:subtitle>\n";
       $rss_items .= "      <itunes:summary><![CDATA[{$desc_item_plain}]]></itunes:summary>\n";
-      $rss_items .= "      <description>{$desc_item_plain}</description>\n";
+      $rss_items .= "      <description>" . htmlspecialchars($desc_item_plain, ENT_XML1, 'UTF-8') . "</description>\n";
       $rss_items .= "      <content:encoded><![CDATA[{$desc_html}]]></content:encoded>\n";
       $rss_items .= "      <itunes:season>$season</itunes:season>\n";
       $rss_items .= "      <itunes:episodeType>$type</itunes:episodeType>\n";
       if (!empty($transcript_text)) {
         $rss_items .= "      <podcast:transcript url='$transcript_url' type='text/html' />\n";
       }
+
 
       $rss_items .= "    </item>";
     }
@@ -372,6 +373,8 @@ XML;
   private function stripHtmlToPlainText(string $html): string {
     $html = preg_replace('/<(br|\/p|\/div|\/li)>/i', "\n", $html);
     $text = strip_tags($html);
+    // Decode HTML entities like &nbsp; to actual characters.
+    $text = html_entity_decode($text, ENT_QUOTES | ENT_HTML5, 'UTF-8');
     $text = preg_replace("/[\r\n]+/", "\n", $text);
     return trim($text);
   }
