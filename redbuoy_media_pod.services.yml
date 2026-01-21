@@ -1,0 +1,5 @@
+services:
+  redbuoy_media_pod.bypass_rss_filter_subscriber:
+    class: Drupal\redbuoy_media_pod\EventSubscriber\BypassRssFilterSubscriber
+    tags:
+      - { name: event_subscriber }
