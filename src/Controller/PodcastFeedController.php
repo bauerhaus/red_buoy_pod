@@ -174,7 +174,11 @@ class PodcastFeedController implements ContainerInjectionInterface {
 
       // Safe to proceed.
       $size = filesize($real_path);
-      $url = $this->fileUrlGenerator->generateAbsoluteString($uri);
+      // Generate routed download URL instead of direct file URL.
+      $url = Url::fromRoute('redbuoy_media_pod.download', [
+        'node_id' => $node->id(),
+        'file_id' => $file->id(),
+      ], ['absolute' => TRUE])->toString();
       $ts = strtotime($node->get('field_podcast_date')->value ?? '') ?: $node->getCreatedTime();
       $duration = htmlspecialchars($node->get('field_podcast_duration')->value ?? '');
       $explicit = htmlspecialchars($node->get('field_podcast_explicit')->value ?? '');
