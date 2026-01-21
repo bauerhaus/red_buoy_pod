@@ -35,6 +35,7 @@ FEATURES
 - Supports multiple podcast subjects from a single content type
 - Does not require Views (but supports them)
 - Text Sanitization for Podcast Compatibility - see note below
+- links to audio enclosures are passed through a routing address and a controller to log audio file requests
 
 QUICK START
 -----------
