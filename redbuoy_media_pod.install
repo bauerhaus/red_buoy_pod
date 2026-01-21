@@ -7,6 +7,75 @@ use Drupal\Core\Entity\Entity\EntityFormDisplay;
 use Drupal\Core\Entity\Entity\EntityViewDisplay;
 
 /**
+ * Implements hook_schema().
+ */
+function redbuoy_media_pod_schema() {
+  $schema['redbuoy_podcast_downloads'] = [
+    'description' => 'Logs podcast episode downloads for analytics.',
+    'fields' => [
+      'id' => [
+        'type' => 'serial',
+        'not null' => TRUE,
+        'description' => 'Primary Key: Unique download log ID.',
+      ],
+      'timestamp' => [
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Unix timestamp of the download.',
+      ],
+      'node_id' => [
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Node ID of the podcast episode.',
+      ],
+      'file_id' => [
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'File ID of the downloaded MP3.',
+      ],
+      'feed_name' => [
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'Name of the podcast feed.',
+      ],
+      'ip_address' => [
+        'type' => 'varchar',
+        'length' => 45,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'IP address of the requester (supports IPv6).',
+      ],
+      'user_agent' => [
+        'type' => 'varchar',
+        'length' => 512,
+        'not null' => FALSE,
+        'description' => 'User agent string of the requester.',
+      ],
+      'referer' => [
+        'type' => 'varchar',
+        'length' => 512,
+        'not null' => FALSE,
+        'description' => 'HTTP referer if available.',
+      ],
+    ],
+    'primary key' => ['id'],
+    'indexes' => [
+      'timestamp' => ['timestamp'],
+      'node_id' => ['node_id'],
+      'feed_name' => ['feed_name'],
+      'ip_address' => ['ip_address'],
+    ],
+  ];
+  
+  return $schema;
+}
+
+/**
  * Adds the new 'itunes_update_frequency' field to feed settings.
  */
 function redbuoy_media_pod_update_8001() {
@@ -34,6 +103,84 @@ function redbuoy_media_pod_update_8001() {
     ->set('feed_protected', $protected)
     ->set('feed_fields', $editable)
     ->save();
+}
+
+/**
+ * Creates the podcast downloads tracking table.
+ */
+function redbuoy_media_pod_update_8002() {
+  $schema = \Drupal::database()->schema();
+  $table_name = 'redbuoy_podcast_downloads';
+  
+  if (!$schema->tableExists($table_name)) {
+    $table_schema = [
+      'description' => 'Logs podcast episode downloads for analytics.',
+      'fields' => [
+        'id' => [
+          'type' => 'serial',
+          'not null' => TRUE,
+          'description' => 'Primary Key: Unique download log ID.',
+        ],
+        'timestamp' => [
+          'type' => 'int',
+          'not null' => TRUE,
+          'default' => 0,
+          'description' => 'Unix timestamp of the download.',
+        ],
+        'node_id' => [
+          'type' => 'int',
+          'not null' => TRUE,
+          'default' => 0,
+          'description' => 'Node ID of the podcast episode.',
+        ],
+        'file_id' => [
+          'type' => 'int',
+          'not null' => TRUE,
+          'default' => 0,
+          'description' => 'File ID of the downloaded MP3.',
+        ],
+        'feed_name' => [
+          'type' => 'varchar',
+          'length' => 255,
+          'not null' => TRUE,
+          'default' => '',
+          'description' => 'Name of the podcast feed.',
+        ],
+        'ip_address' => [
+          'type' => 'varchar',
+          'length' => 45,
+          'not null' => TRUE,
+          'default' => '',
+          'description' => 'IP address of the requester (supports IPv6).',
+        ],
+        'user_agent' => [
+          'type' => 'varchar',
+          'length' => 512,
+          'not null' => FALSE,
+          'description' => 'User agent string of the requester.',
+        ],
+        'referer' => [
+          'type' => 'varchar',
+          'length' => 512,
+          'not null' => FALSE,
+          'description' => 'HTTP referer if available.',
+        ],
+      ],
+      'primary key' => ['id'],
+      'indexes' => [
+        'timestamp' => ['timestamp'],
+        'node_id' => ['node_id'],
+        'feed_name' => ['feed_name'],
+        'ip_address' => ['ip_address'],
+      ],
+    ];
+    
+    $schema->createTable($table_name, $table_schema);
+    
+    return t('Created podcast downloads tracking table.');
+  }
+  
+  return t('Podcast downloads table already exists.');
 }
 
 
@@ -122,6 +269,12 @@ function redbuoy_media_pod_uninstall() {
     if ($storage = FieldStorageConfig::loadByName('node', $field_name)) {
       $storage->delete();
     }
+  }
+  
+  // 5. Drop the downloads tracking table.
+  $schema = \Drupal::database()->schema();
+  if ($schema->tableExists('redbuoy_podcast_downloads')) {
+    $schema->dropTable('redbuoy_podcast_downloads');
   }
 }
 

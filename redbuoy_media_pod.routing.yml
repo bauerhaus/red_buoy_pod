@@ -20,3 +20,12 @@ redbuoy_media_pod.render_feed:
     _controller: '\Drupal\redbuoy_media_pod\Controller\PodcastFeedController::renderFeed'
   requirements:
     _permission: 'access content'
+
+redbuoy_media_pod.download:
+  path: '/podcast/media/{node_id}/{file_id}'
+  defaults:
+    _controller: '\Drupal\redbuoy_media_pod\Controller\DownloadController::download'
+  requirements:
+    _permission: 'access content'
+    node_id: \d+
+    file_id: \d+
