@@ -31,7 +31,7 @@ redbuoy_media_pod.download:
     file_id: \d+
 
 redbuoy_media_pod.download_mp3:
-  path: '/podcast/media/{node_id}/{file_id}.mp3'
+  path: '/podcast/media/{node_id}/{file_id}/audio.mp3'
   defaults:
     _controller: '\Drupal\redbuoy_media_pod\Controller\DownloadController::download'
   requirements:
