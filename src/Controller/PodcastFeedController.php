@@ -175,7 +175,7 @@ class PodcastFeedController implements ContainerInjectionInterface {
       // Safe to proceed.
       $size = filesize($real_path);
       // Generate routed download URL instead of direct file URL.
-      $url = Url::fromRoute('redbuoy_media_pod.download', [
+      $url = Url::fromRoute('redbuoy_media_pod.download_mp3', [
         'node_id' => $node->id(),
         'file_id' => $file->id(),
       ], ['absolute' => TRUE])->toString();
