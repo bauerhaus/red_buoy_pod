@@ -143,7 +143,8 @@ function redbuoy_followers_preprocess_page(array &$variables) {
       '<div class="rb-followers-cta__inner">' .
         '<p><strong>Community comments — ' . Html::escape($feed_label) . '</strong><br>' .
         'You arrived here from: “' . $episode_title . '”.</p>' .
-        '<p><a class="button button--primary" href="' . Html::escape($comment_url) . '">Leave a comment on this episode</a></p>' .
+        '<p><a class="button button--primary" href="' . Html::escape($comment_url) . '">Leave a comment on this episode</a> </p>
+        <p>You can read other comments on the podcast below.</p>' .
         '<p><em>Your comment will appear after moderation.</em></p>' .
         '</div>',
     ],
@@ -151,7 +152,7 @@ function redbuoy_followers_preprocess_page(array &$variables) {
   ];
 
   // Put it above the main content.
-  $variables['page']['content']['rb_followers_cta'] = $cta;
+ $variables['page']['content'] = ['rb_followers_cta' => $cta] + $variables['page']['content'];
 }
 
 /**

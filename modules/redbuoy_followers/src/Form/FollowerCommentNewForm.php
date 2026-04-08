@@ -49,8 +49,10 @@ final class FollowerCommentNewForm extends FormBase {
     $form['intro'] = [
       '#markup' => $this->t(
         '<h2> Thank you for your interest in the @feed podcast</h2>
-        <p> Your comment will appear after moderation.</p>
-        <p> <em>We don\'t collect any private data - not your email address, or any other identifiable information. Your intrest in our podcast is important to us - your privacy is more important</em>. But this means we can\'t send you a notice when your comment is approved :-)</p>',
+        <p><em>Oh, how lovely that you want to share your thoughts.</em></p>
+          <p>Thank you for taking a moment to reach back. Your voice matters here.</p>
+          <p>A small but important note about your privacy: we don\'t collect your email address or any other identifying information. We think your interest in these stories is a gift, and your privacy is more important to us than our convenience. The one small cost of this is that we can\'t notify you when your comment is approved — but it will appear, after a brief moderation pause, for the whole community to read.</p>
+          <p>~Much Love</p>',
         ['@feed' => $feed_label]
       ),
     ];
