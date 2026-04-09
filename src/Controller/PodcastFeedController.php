@@ -211,7 +211,6 @@ class PodcastFeedController implements ContainerInjectionInterface {
       ) {
         $nid = (int) $node->id();
 
-
         $comments_url = Url::fromUri(
           'internal:/podcast-comments',
           [
@@ -224,13 +223,13 @@ class PodcastFeedController implements ContainerInjectionInterface {
         )->toString();
 
         // Plain text tail.
-        $desc_item_plain .= "\n\nView comments on this podcast: $comments_url";
+        $desc_item_plain .= "\n\nShare and read comments: $comments_url";
 
         // HTML tail.
-        $desc_html .= '<p>💬 <a href="' . $comments_url . '">View comments on this podcast</a></p>';
+        $desc_html .= '<p><a href="' . $comments_url . '">Share and read comments.</a></p>';
 
         if (isset($itunes_summary)) {
-          $itunes_summary = rtrim($itunes_summary) . "\n\nView comments on this podcast: $comments_url";
+          $itunes_summary = rtrim($itunes_summary) . "\n\nShare and read comments: $comments_url";
         }
       }
       // Track the modified times for the HTML header.
